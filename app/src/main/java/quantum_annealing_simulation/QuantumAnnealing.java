@@ -1,12 +1,13 @@
 package quantum_annealing_simulation;
 
-import org.la4j.Matrix;
-import org.la4j.Vector;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.shape.Diag;
+import org.nd4j.linalg.factory.Nd4j;
 
 public class QuantumAnnealing {
     final int Tau = 1;
     final int N;
-    Vector E;
+    INDArray E;
 
     public int getTau() {
         return this.Tau;
@@ -16,7 +17,7 @@ public class QuantumAnnealing {
         return this.N;
     }
 
-    public QuantumAnnealing(int N, Vector E) {
+    public QuantumAnnealing(int N, INDArray E) {
         this.N = N;
         this.E = E;
     }
@@ -29,15 +30,15 @@ public class QuantumAnnealing {
         return (Tau - time) / this.Tau;
     }
 
-    public Matrix create_tfim(double time, Matrix hamiltonian) {
+    public INDArray create_tfim(double time, INDArray hamiltonian) {
         // Set diagonal
         double v = this.scheduleE(time);
 
         if (hamiltonian == null) {
-            hamiltonian = E.multiply(v).toDiagonalMatrix();
+            new Diag(this.E.mul(v), hamiltonian);
         } else {
             for (int i = 0; i < E.length(); i++) {
-                hamiltonian.set(i, i, v * this.E.get(i));
+                hamiltonian.put(i, i, v * this.E.getDouble(i));
             }
         }
         // End
@@ -47,7 +48,7 @@ public class QuantumAnnealing {
         for (int i = 0; i < this.E.length(); i++) {
             for (int n = 0; n < this.N; n++) {
                 int j = i ^ (1 << n);
-                hamiltonian.set(i, j, g);
+                hamiltonian.put(i, j, g);
             }
         }
         // End

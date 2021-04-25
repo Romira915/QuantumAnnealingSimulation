@@ -3,33 +3,33 @@
  */
 package quantum_annealing_simulation;
 
-import java.util.Random;
-
-import org.la4j.Matrix;
-import org.la4j.Vector;
+import org.nd4j.linalg.api.buffer.DataType;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.random.impl.Range;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.api.rng.DefaultRandom;
+import org.nd4j.linalg.api.rng.Random;
 
 public class App {
     public static void main(String[] args) {
         final int N = 5;
 
-        Vector E = Vector.zero((int) Math.pow(2, N));
-        Random rand = new Random();
-        for (int i = 0; i < E.length(); i++) {
-            // Gen gaussian
-            E.set(i, rand.nextGaussian());
-        }
+        // Random rand = new DefaultRandom(915);
+        // INDArray E = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N), 1 }, rand);
 
-        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
+        // QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
 
-        Matrix H = null;
-        double step = 0.01;
-        Vector time_steps = Vector.zero((int) (quantumAnnealing.getTau() / step) + 1);
-        for (int i = 0; i < time_steps.length(); i++) {
-            time_steps.set(i, step * i);
-        }
+        // INDArray H = null;
+        // double step = 0.01;
+        // Range range = new Range(0, quantumAnnealing.getTau() / step + 1, step,
+        // DataType.DOUBLE);
+        // INDArray time_steps = Nd4j.create(range.calculateOutputShape().toArray());
+        // for (int i = 0; i < time_steps.length(); i++) {
+        // time_steps.set(i, step * i);
+        // }
 
-        for (Double t : time_steps) {
-            H = quantumAnnealing.create_tfim(t, H);
-        }
+        // for (Double t : time_steps) {
+        // H = quantumAnnealing.create_tfim(t, H);
+        // }
     }
 }
