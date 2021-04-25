@@ -12,12 +12,24 @@ public class App {
     public static void main(String[] args) {
         final int N = 5;
 
-        Vector E = new Vector((int) Math.pow(2, N));
+        Vector E = Vector.zero((int) Math.pow(2, N));
         Random rand = new Random();
-        for (int i = 0; i < E.length; i++) {
+        for (int i = 0; i < E.length(); i++) {
             // Gen gaussian
-            E[i] = rand.nextGaussian();
+            E.set(i, rand.nextGaussian());
         }
 
+        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
+
+        Matrix H = null;
+        double step = 0.01;
+        Vector time_steps = Vector.zero((int) (quantumAnnealing.getTau() / step) + 1);
+        for (int i = 0; i < time_steps.length(); i++) {
+            time_steps.set(i, step * i);
+        }
+
+        for (Double t : time_steps) {
+            H = quantumAnnealing.create_tfim(t, H);
+        }
     }
 }
