@@ -27,6 +27,7 @@ dependencies {
     
     implementation 'org.la4j:la4j:0.6.0'
     implementation 'org.jfree:jfreechart:1.5.3'
+    implementation 'org.nd4j:nd4j:1.0.0-beta7'
 }
 
 application {
