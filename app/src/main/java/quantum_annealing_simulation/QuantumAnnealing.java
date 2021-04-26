@@ -1,13 +1,19 @@
 package quantum_annealing_simulation;
 
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.scalar.Pow;
 import org.nd4j.linalg.api.ops.impl.shape.Diag;
+import org.nd4j.linalg.api.ops.impl.transforms.same.Abs;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.factory.ops.NDMath;
 
 public class QuantumAnnealing {
-    final int Tau = 1;
-    final int N;
-    INDArray E;
+    private final int Tau = 1;
+    private final int N;
+    private INDArray E;
+
+    private static NDMath ndMath = new NDMath();
 
     public int getTau() {
         return this.Tau;
@@ -35,6 +41,7 @@ public class QuantumAnnealing {
         double v = this.scheduleE(time);
 
         if (hamiltonian == null) {
+            hamiltonian = Nd4j.zeros(DataType.DOUBLE, new long[] { E.length(), E.length() });
             new Diag(this.E.mul(v), hamiltonian);
         } else {
             for (int i = 0; i < E.length(); i++) {
@@ -54,5 +61,12 @@ public class QuantumAnnealing {
         // End
 
         return hamiltonian;
+    }
+
+    public static INDArray amp2prob(INDArray vec) {
+        INDArray array = QuantumAnnealing.ndMath.abs(vec.dup());
+        array = QuantumAnnealing.ndMath.pow(array, 2);
+
+        return array;
     }
 }

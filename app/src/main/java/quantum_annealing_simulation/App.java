@@ -4,32 +4,34 @@
 package quantum_annealing_simulation;
 
 import org.nd4j.linalg.api.buffer.DataType;
+import org.nd4j.linalg.api.iter.NdIndexIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.random.impl.Range;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.rng.NativeRandom;
 import org.nd4j.linalg.api.rng.DefaultRandom;
 import org.nd4j.linalg.api.rng.Random;
+import org.nd4j.linalg.eigen.Eigen;
 
 public class App {
     public static void main(String[] args) {
         final int N = 5;
 
-        // Random rand = new DefaultRandom(915);
-        // INDArray E = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N), 1 }, rand);
+        Random rand = Nd4j.getRandom();
+        rand.setSeed(915);
+        INDArray E = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N) }, rand);
 
-        // QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
+        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
 
-        // INDArray H = null;
-        // double step = 0.01;
-        // Range range = new Range(0, quantumAnnealing.getTau() / step + 1, step,
-        // DataType.DOUBLE);
-        // INDArray time_steps = Nd4j.create(range.calculateOutputShape().toArray());
-        // for (int i = 0; i < time_steps.length(); i++) {
-        // time_steps.set(i, step * i);
-        // }
-
-        // for (Double t : time_steps) {
-        // H = quantumAnnealing.create_tfim(t, H);
-        // }
+        INDArray H = null;
+        double step = 0.01;
+        INDArray time_steps = Nd4j.arange(0, 1 + step, step);
+        for (double t : time_steps.toDoubleVector()) {
+            H = quantumAnnealing.create_tfim(t, H);
+            INDArray evecs = H.dup(); // deepcopy
+            INDArray evals = Eigen.symmetricGeneralizedEigenvalues(evecs);
+            INDArray amp = QuantumAnnealing.amp2prob(evecs);
+            System.out.println(amp);
+        }
     }
 }
