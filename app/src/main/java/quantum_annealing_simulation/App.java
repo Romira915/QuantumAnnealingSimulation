@@ -44,7 +44,7 @@ public class App {
     }
 
     public static void main(String[] args) {
-        final int N = 5;
+        final int N = 8;
 
         try {
             Files.createDirectories(Paths.get("./amp"));
