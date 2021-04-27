@@ -3,35 +3,91 @@
  */
 package quantum_annealing_simulation;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartFrame;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.iter.NdIndexIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.random.impl.Range;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.rng.NativeRandom;
+
+import checkers.igj.quals.I;
+
 import org.nd4j.linalg.api.rng.DefaultRandom;
 import org.nd4j.linalg.api.rng.Random;
 import org.nd4j.linalg.eigen.Eigen;
 
 public class App {
+
+    private static XYDataset createDataset(INDArray f) {
+        final XYSeries data = new XYSeries("normal");
+        for (int i = 0; i < f.length(); i++) {
+            data.add(i, f.getDouble(i));
+        }
+
+        final XYSeriesCollection dataset = new XYSeriesCollection();
+        dataset.addSeries(data);
+        return dataset;
+    }
+
     public static void main(String[] args) {
         final int N = 5;
 
+        try {
+            Files.createDirectories(Paths.get("./amp"));
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
         Random rand = Nd4j.getRandom();
-        rand.setSeed(915);
+        // rand.setSeed(915);
         INDArray E = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N) }, rand);
+
+        JFreeChart jFreeChart = ChartFactory.createXYLineChart("normal distribution E", "x", "y", App.createDataset(E));
+        ChartFrame chartFrame = new ChartFrame("ガウス分布", jFreeChart);
+        chartFrame.setSize(1200, 1200);
+        // chartFrame.setVisible(true);
+        try {
+            ChartUtils.saveChartAsJPEG(new File("gaussian.jpg"), jFreeChart, 600, 400);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
 
         QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
 
         INDArray H = null;
         double step = 0.01;
         INDArray time_steps = Nd4j.arange(0, 1 + step, step);
+        INDArray dataSet = Nd4j.zeros(0, 0);
         for (double t : time_steps.toDoubleVector()) {
             H = quantumAnnealing.create_tfim(t, H);
             INDArray evecs = H.dup(); // deepcopy
             INDArray evals = Eigen.symmetricGeneralizedEigenvalues(evecs);
-            INDArray amp = QuantumAnnealing.amp2prob(evecs);
-            System.out.println(amp);
+
+            // for (int i = 0; i < evecs.columns(); i++) {
+            INDArray amp = QuantumAnnealing.amp2prob(evecs.getColumn(0, false));
+            // System.out.print(amp);
+            JFreeChart chart = ChartFactory.createXYLineChart("amp", "x", "y", App.createDataset(amp));
+            ChartFrame frame = new ChartFrame("ガウス分布", jFreeChart);
+            try {
+                ChartUtils.saveChartAsJPEG(new File("./amp/amp" + (int) (t * 100) + ".jpg"), chart, 600, 400);
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+            // }
         }
     }
 }

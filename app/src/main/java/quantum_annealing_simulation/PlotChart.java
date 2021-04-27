@@ -3,6 +3,7 @@ package quantum_annealing_simulation;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 
+import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -19,7 +20,6 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYDataset;
 
 public class PlotChart {
-    public PlotChart() {
-
+    public PlotChart(String title) {
     }
 }
