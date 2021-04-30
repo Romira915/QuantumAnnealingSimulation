@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.CharUtils;
@@ -57,11 +58,9 @@ public class App {
         Random rand = Nd4j.getRandom();
         // rand.setSeed(915);
         INDArray E = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N) }, rand);
-        System.out.println("before " + Arrays.toString(E.shape()));
 
         PlotChart gaussianChart = new PlotChart("Gaussian", "x", "y",
                 PlotChart.createXYDataset(Nd4j.arange(0, (int) Math.pow(2, N)), E, new String[] { "E" }, true));
-        System.out.println("after " + Arrays.toString(E.shape()));
         // gaussianChart.showChart();
 
         // ChartFrame chartFrame = new ChartFrame("ガウス分布", jFreeChart);
@@ -78,11 +77,14 @@ public class App {
         INDArray H = null;
         double step = 0.01;
         INDArray time_steps = Nd4j.arange(0, 1 + step, step);
-        XYSeries eigenSeries[] = new XYSeries[(int) Math.pow(2, N)];
+        INDArray eigenValues = Nd4j.zeros((int) Math.pow(2, N), time_steps.length());
+        int eigenValuesIndex = 0;
         for (double t : time_steps.toDoubleVector()) {
             H = quantumAnnealing.create_tfim(t, H);
             INDArray eigenVectors = H.dup(); // deepcopy
-            INDArray eigenValues = Eigen.symmetricGeneralizedEigenvalues(eigenVectors);
+            eigenValues.putColumn(eigenValuesIndex, Eigen.symmetricGeneralizedEigenvalues(eigenVectors));
+            eigenValuesIndex += 1;
+            // INDArray eigenValues = Eigen.symmetricGeneralizedEigenvalues(eigenVectors);
 
             // XYSeriesCollection eigenVaCollection = new XYSeriesCollection();
             // for (int i = 0; i < eigenValues.length(); i++) {
@@ -103,7 +105,6 @@ public class App {
             // // TODO: handle exception
             // }
 
-            long l[] = eigenVectors.shape();
             INDArray amp = QuantumAnnealing.amp2prob(eigenVectors.getColumn(0, false));
             PlotChart probabilityDensityChart = new PlotChart("probabilityDensity", "x", "y",
                     PlotChart.createXYDataset(Nd4j.arange(0, amp.length()), amp, new String[] { "baseState" }, false));
@@ -118,5 +119,13 @@ public class App {
             // // TODO: handle exception
             // }
         }
+
+        String eigenChartKeys[] = Arrays.asList(Nd4j.arange(0, eigenValues.columns()).toIntVector()).stream().map(i -> {
+            System.out.println(i);
+            return String.valueOf(i);
+        }).toArray(String[]::new);
+        PlotChart eigenValueChart = new PlotChart("eigenValue", "t/τ", "E",
+                PlotChart.createXYDataset(time_steps, eigenValues, eigenChartKeys, false));
+        eigenValueChart.saveChartAsJPEG("eigenValue.png", 800, 600);
     }
 }

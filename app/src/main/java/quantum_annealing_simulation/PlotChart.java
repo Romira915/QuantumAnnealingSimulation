@@ -66,6 +66,11 @@ public class PlotChart {
             num = yData.columns();
         }
 
+        if (num != keys.length) {
+            System.err.println("Not match yDataSize:" + num + " and keysSize:" + keys.length);
+            return null;
+        }
+
         for (int i = 0; i < num; i++) {
             XYSeries xySeries = new XYSeries(keys[i]);
             INDArray rowVec = isRowVectors ? yData.getRow(i) : yData.getColumn(i);
