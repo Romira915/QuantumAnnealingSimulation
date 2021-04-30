@@ -61,7 +61,8 @@ public class App {
 
         PlotChart gaussianChart = new PlotChart("Gaussian", "x", "y",
                 PlotChart.createXYDataset(Nd4j.arange(0, (int) Math.pow(2, N)), E, new String[] { "E" }, true));
-        // gaussianChart.showChart();
+        gaussianChart.saveChartAsJPEG("gaussian.jpg", 800, 600);
+        gaussianChart.showChart();
 
         // ChartFrame chartFrame = new ChartFrame("ガウス分布", jFreeChart);
         // chartFrame.setSize(1200, 1200);
@@ -120,12 +121,12 @@ public class App {
             // }
         }
 
-        String eigenChartKeys[] = Arrays.asList(Nd4j.arange(0, eigenValues.columns()).toIntVector()).stream().map(i -> {
-            System.out.println(i);
-            return String.valueOf(i);
-        }).toArray(String[]::new);
+        String eigenChartKeys[] = Arrays.stream(Nd4j.arange(0, eigenValues.columns()).toIntVector())
+                .mapToObj(String::valueOf).toArray(String[]::new);
+
         PlotChart eigenValueChart = new PlotChart("eigenValue", "t/τ", "E",
-                PlotChart.createXYDataset(time_steps, eigenValues, eigenChartKeys, false));
-        eigenValueChart.saveChartAsJPEG("eigenValue.png", 800, 600);
+                PlotChart.createXYDataset(time_steps, eigenValues, eigenChartKeys, true));
+        eigenValueChart.saveChartAsJPEG("eigenValue.jpg", 800, 600);
+        eigenValueChart.showChart();
     }
 }

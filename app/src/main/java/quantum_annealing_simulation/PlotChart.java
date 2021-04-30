@@ -39,7 +39,7 @@ public class PlotChart {
 
     public void saveChartAsJPEG(String file, int width, int height) {
         try {
-            ChartUtils.saveChartAsJPEG(new File(file), 85, this.chart, width, height);
+            ChartUtils.saveChartAsJPEG(new File(file), 0.85f, this.chart, width, height);
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -66,10 +66,11 @@ public class PlotChart {
             num = yData.columns();
         }
 
-        if (num != keys.length) {
-            System.err.println("Not match yDataSize:" + num + " and keysSize:" + keys.length);
-            return null;
-        }
+        // if (num != keys.length) {
+        // System.err.println("Not match yDataSize:" + num + " and keysSize:" +
+        // keys.length);
+        // return null;
+        // }
 
         for (int i = 0; i < num; i++) {
             XYSeries xySeries = new XYSeries(keys[i]);
