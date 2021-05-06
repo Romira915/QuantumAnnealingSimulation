@@ -26,6 +26,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.netbeans.api.annotations.common.NullAllowed;
 
+import checkers.units.quals.min;
+
 public class PlotChart {
     private JFreeChart chart;
     private String title = "";
@@ -49,6 +51,14 @@ public class PlotChart {
         ChartFrame chartFrame = new ChartFrame(this.title, this.chart);
         chartFrame.setSize(800, 600);
         chartFrame.setVisible(true);
+    }
+
+    public void setXRange(double min, double max) {
+        this.chart.getXYPlot().getDomainAxis().setRange(min, max);
+    }
+
+    public void setYRange(double min, double max) {
+        this.chart.getXYPlot().getRangeAxis().setRange(min, max);
     }
 
     public static XYDataset createXYDataset(INDArray xData, INDArray yData, String[] keys, boolean isRowVectors) {
