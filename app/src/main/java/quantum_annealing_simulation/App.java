@@ -60,7 +60,7 @@ public class App {
         PlotChart gaussianChart = new PlotChart("Gaussian", "x", "y",
                 PlotChart.createXYDataset(Nd4j.arange(0, (int) Math.pow(2, N)), E, new String[] { "E" }, true));
         gaussianChart.saveChartAsJPEG("gaussian.jpg", 800, 600);
-        gaussianChart.showChart();
+        // gaussianChart.showChart();
 
         // ChartFrame chartFrame = new ChartFrame("ガウス分布", jFreeChart);
         // chartFrame.setSize(1200, 1200);
@@ -126,6 +126,6 @@ public class App {
         PlotChart eigenValueChart = new PlotChart("eigenValue", "t/τ", "E",
                 PlotChart.createXYDataset(time_steps, eigenValues, eigenChartKeys, true));
         eigenValueChart.saveChartAsJPEG("eigenValue.jpg", 800, 600);
-        eigenValueChart.showChart();
+        // eigenValueChart.showChart();
     }
 }

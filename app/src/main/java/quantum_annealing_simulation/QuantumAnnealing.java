@@ -63,8 +63,8 @@ public class QuantumAnnealing {
         return hamiltonian;
     }
 
-    public void genrate_diffeq() {
-
+    public void genrate_diffeq(int index, int time) {
+        
     }
 
     public static INDArray amp2prob(INDArray vec) {
