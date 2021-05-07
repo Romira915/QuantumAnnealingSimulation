@@ -1,4 +1,4 @@
-package quantum_annealing_simulation;
+package qa;
 
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -64,7 +64,7 @@ public class QuantumAnnealing {
     }
 
     public void genrate_diffeq(int index, int time) {
-        
+
     }
 
     public static INDArray amp2prob(INDArray vec) {

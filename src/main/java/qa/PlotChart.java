@@ -1,4 +1,4 @@
-package quantum_annealing_simulation;
+package qa;
 
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
