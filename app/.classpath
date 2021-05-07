@@ -13,7 +13,6 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
 	<classpathentry kind="output" path="bin/default"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-16/"/>
 	<classpathentry sourcepath="C:/Users/romira/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/30.0-jre/44b1d40ac2743daef983d85b81f4534bc6a17d04/guava-30.0-jre-sources.jar" kind="lib" path="C:/Users/romira/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/30.0-jre/8ddbc8769f73309fe09b54c5951163f10b0d89fa/guava-30.0-jre.jar">

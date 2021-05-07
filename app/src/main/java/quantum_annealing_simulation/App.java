@@ -62,15 +62,6 @@ public class App {
         gaussianChart.saveChartAsJPEG("gaussian.jpg", 800, 600);
         // gaussianChart.showChart();
 
-        // ChartFrame chartFrame = new ChartFrame("ガウス分布", jFreeChart);
-        // chartFrame.setSize(1200, 1200);
-        // chartFrame.setVisible(true);
-        // try {
-        // ChartUtils.saveChartAsJPEG(new File("gaussian.jpg"), jFreeChart, 600, 400);
-        // } catch (Exception e) {
-        // // TODO: handle exception
-        // }
-
         QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
 
         INDArray H = null;
@@ -83,41 +74,12 @@ public class App {
             INDArray eigenVectors = H.dup(); // deepcopy
             eigenValues.putColumn(eigenValuesIndex, Eigen.symmetricGeneralizedEigenvalues(eigenVectors));
             eigenValuesIndex += 1;
-            // INDArray eigenValues = Eigen.symmetricGeneralizedEigenvalues(eigenVectors);
-
-            // XYSeriesCollection eigenVaCollection = new XYSeriesCollection();
-            // for (int i = 0; i < eigenValues.length(); i++) {
-            // if (eigenSeries[i] == null) {
-            // eigenSeries[i] = new XYSeries(i);
-            // }
-            // eigenSeries[i].add(t, eigenValues.getDouble(i));
-            // }
-            // for (XYSeries xySeries : eigenSeries) {
-            // eigenVaCollection.addSeries(xySeries);
-            // }
-            // JFreeChart eigenValChart = ChartFactory.createXYLineChart("eigenValue.jpg",
-            // "t/τ", "E", eigenVaCollection);
-            // try {
-            // ChartUtils.saveChartAsJPEG(new File("./eigenValue.jpg"), eigenValChart, 800,
-            // 600);
-            // } catch (Exception e) {
-            // // TODO: handle exception
-            // }
 
             INDArray amp = QuantumAnnealing.amp2prob(eigenVectors.getColumn(0, false));
             PlotChart probabilityDensityChart = new PlotChart("probabilityDensity", "x", "y",
                     PlotChart.createXYDataset(Nd4j.arange(0, amp.length()), amp, new String[] { "baseState" }, false));
             probabilityDensityChart.setYRange(0, 1);
             probabilityDensityChart.saveChartAsJPEG("./amp/amp" + (int) (t * 100) + ".jpg", 600, 400);
-
-            // JFreeChart chart = ChartFactory.createXYLineChart("amp", "x", "y",
-            // App.createDataset(amp));
-            // try {
-            // ChartUtils.saveChartAsJPEG(new File("./amp/amp" + (int) (t * 100) + ".jpg"),
-            // chart, 600, 400);
-            // } catch (Exception e) {
-            // // TODO: handle exception
-            // }
         }
 
         String eigenChartKeys[] = Arrays.stream(Nd4j.arange(0, eigenValues.columns()).toIntVector())
