@@ -27,8 +27,6 @@ import org.nd4j.linalg.api.ops.random.impl.Range;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.rng.NativeRandom;
 
-import checkers.igj.quals.I;
-
 import org.nd4j.linalg.api.rng.DefaultRandom;
 import org.nd4j.linalg.api.rng.Random;
 import org.nd4j.linalg.eigen.Eigen;
@@ -56,7 +54,7 @@ public class App {
         }
 
         Random rand = Nd4j.getRandom();
-        // rand.setSeed(915);
+        rand.setSeed(1042);
         INDArray E = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N) }, rand);
 
         PlotChart gaussianChart = new PlotChart("Gaussian", "x", "y",
@@ -109,6 +107,7 @@ public class App {
             INDArray amp = QuantumAnnealing.amp2prob(eigenVectors.getColumn(0, false));
             PlotChart probabilityDensityChart = new PlotChart("probabilityDensity", "x", "y",
                     PlotChart.createXYDataset(Nd4j.arange(0, amp.length()), amp, new String[] { "baseState" }, false));
+            probabilityDensityChart.setYRange(0, 1);
             probabilityDensityChart.saveChartAsJPEG("./amp/amp" + (int) (t * 100) + ".jpg", 600, 400);
 
             // JFreeChart chart = ChartFactory.createXYLineChart("amp", "x", "y",

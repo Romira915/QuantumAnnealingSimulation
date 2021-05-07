@@ -63,6 +63,10 @@ public class QuantumAnnealing {
         return hamiltonian;
     }
 
+    public void genrate_diffeq() {
+
+    }
+
     public static INDArray amp2prob(INDArray vec) {
         INDArray array = QuantumAnnealing.ndMath.abs(vec.dup());
         array = QuantumAnnealing.ndMath.pow(array, 2);
