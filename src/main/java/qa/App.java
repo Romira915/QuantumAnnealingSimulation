@@ -65,8 +65,8 @@ public class App {
         QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
 
         INDArray H = null;
-        double step = 0.01;
-        INDArray time_steps = Nd4j.arange(0, 1 + step, step);
+        double step = 0.1;
+        INDArray time_steps = Nd4j.arange(0, quantumAnnealing.getTau() + step, step);
         INDArray eigenValues = Nd4j.zeros((int) Math.pow(2, N), time_steps.length());
         int eigenValuesIndex = 0;
         for (double t : time_steps.toDoubleVector()) {
@@ -79,15 +79,26 @@ public class App {
             PlotChart probabilityDensityChart = new PlotChart("probabilityDensity", "x", "y",
                     PlotChart.createXYDataset(Nd4j.arange(0, amp.length()), amp, new String[] { "baseState" }, false));
             probabilityDensityChart.setYRange(0, 1);
-            probabilityDensityChart.saveChartAsJPEG("./amp/amp" + (int) (t * 100) + ".jpg", 600, 400);
+            probabilityDensityChart.saveChartAsJPEG("./amp/amp" + String.format("%.2f", t) + ".jpg", 600, 400);
+
+            if (t == quantumAnnealing.getTau()) {
+                XYDataset dataset = PlotChart.createXYDataset(Nd4j.arange(0, amp.length()),
+                        Nd4j.create(new double[][] { amp.toDoubleVector(), E.toDoubleVector() }),
+                        new String[] { "probability", "E" }, true);
+                PlotChart tauChart = new PlotChart("", "x", "y", dataset);
+                tauChart.saveChartAsJPEG("tau_gaussian.jpg", 1000, 800);
+            }
         }
 
-        String eigenChartKeys[] = Arrays.stream(Nd4j.arange(0, eigenValues.columns()).toIntVector())
+        String eigenChartKeys[] = Arrays.stream(Nd4j.arange(0, eigenValues.rows()).toIntVector())
                 .mapToObj(String::valueOf).toArray(String[]::new);
 
+        System.out.println("time: " + time_steps.length() + " rowsValues: " + eigenValues.rows() + " columnValues: "
+                + eigenValues.columns() + " Keys: " + eigenChartKeys.length);
         PlotChart eigenValueChart = new PlotChart("eigenValue", "t/τ", "E",
                 PlotChart.createXYDataset(time_steps, eigenValues, eigenChartKeys, true));
         eigenValueChart.saveChartAsJPEG("eigenValue.jpg", 800, 600);
         // eigenValueChart.showChart();
+
     }
 }

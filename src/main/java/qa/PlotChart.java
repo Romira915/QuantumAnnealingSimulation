@@ -61,6 +61,11 @@ public class PlotChart {
         this.chart.getXYPlot().getRangeAxis().setRange(min, max);
     }
 
+    /**
+     * Data Shape in the case of isRowVectors is true, xData.length ==
+     * yData.columnLength (if isRowVectors is false, yData.rowLength) keys.length ==
+     * yData.rowLength (if isRowVectors is false, yData.columnLength)
+     */
     public static XYDataset createXYDataset(INDArray xData, INDArray yData, String[] keys, boolean isRowVectors) {
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
 
@@ -69,24 +74,25 @@ public class PlotChart {
             isRowVectors = true;
         }
 
-        int num = 0;
+        int dataNum = 0;
         if (isRowVectors) {
-            num = yData.rows();
+            dataNum = yData.rows();
         } else {
-            num = yData.columns();
+            dataNum = yData.columns();
         }
 
+        // Data shape check
         // if (num != keys.length) {
         // System.err.println("Not match yDataSize:" + num + " and keysSize:" +
         // keys.length);
         // return null;
         // }
 
-        for (int i = 0; i < num; i++) {
+        for (int i = 0; i < dataNum; i++) {
             XYSeries xySeries = new XYSeries(keys[i]);
-            INDArray rowVec = isRowVectors ? yData.getRow(i) : yData.getColumn(i);
-            for (int j = 0; j < rowVec.length(); j++) {
-                xySeries.add(xData.getNumber(j), rowVec.getNumber(j));
+            INDArray yValues = isRowVectors ? yData.getRow(i) : yData.getColumn(i);
+            for (int j = 0; j < yValues.length(); j++) {
+                xySeries.add(xData.getNumber(j), yValues.getNumber(j));
             }
             xySeriesCollection.addSeries(xySeries);
         }

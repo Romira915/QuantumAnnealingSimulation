@@ -63,7 +63,14 @@ public class QuantumAnnealing {
         return hamiltonian;
     }
 
-    public void genrate_diffeq(int index, int time) {
+    public double genrate_diffeq(int index, INDArray offdiag_indices, int time, INDArray vec) {
+        double v = this.E.getDouble(index) * this.scheduleE(time);
+        double g = -1 * this.scheduleG(time);
+
+        return v * vec.getDouble(index) + g;
+    }
+
+    public void simdiffeq_rhs(int t, INDArray vec) {
 
     }
 

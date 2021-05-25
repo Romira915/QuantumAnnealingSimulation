@@ -1,4 +1,5 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
-    "python.pythonPath": "C:\\Users\\romira\\scoop\\apps\\miniconda3\\current\\envs\\main\\python.exe"
+    "python.pythonPath": "C:\\Users\\romira\\scoop\\apps\\miniconda3\\current\\envs\\main\\python.exe",
+    "codic.case": "snake_case"
 }
