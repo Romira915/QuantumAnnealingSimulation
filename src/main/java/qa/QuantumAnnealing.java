@@ -1,5 +1,8 @@
 package qa;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.scalar.Pow;
@@ -7,6 +10,7 @@ import org.nd4j.linalg.api.ops.impl.shape.Diag;
 import org.nd4j.linalg.api.ops.impl.transforms.same.Abs;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.ops.NDMath;
+import org.nd4j.linalg.indexing.INDArrayIndex;
 
 public class QuantumAnnealing {
     private final int Tau = 1;
@@ -63,11 +67,15 @@ public class QuantumAnnealing {
         return hamiltonian;
     }
 
-    public double genrate_diffeq(int index, INDArray offdiag_indices, int time, INDArray vec) {
+    public double genrate_diffeq(int index, INDArrayIndex offdiag_indices, int time, INDArray vec) {
         double v = this.E.getDouble(index) * this.scheduleE(time);
         double g = -1 * this.scheduleG(time);
 
-        return v * vec.getDouble(index) + g;
+        return v * vec.getDouble(index) + g * vec.get(offdiag_indices).sumNumber().doubleValue();
+    }
+
+    public BiFunction<Double, INDArray, Double>[] generateDiffeqArray() {
+        return null;
     }
 
     public void simdiffeq_rhs(int t, INDArray vec) {

@@ -25,3 +25,6 @@ for i in range(1, N + 1):
         H_q += sigma_x_i
 
 print(H_q)
+
+s = np.sum(sigma_x)
+print(s)

@@ -6,6 +6,7 @@ package qa;
 import org.junit.Test;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
@@ -29,11 +30,16 @@ public class AppTest {
     }
 
     @Test
-    public void testNd4jConcat() {
-        INDArray array0 = Nd4j.create(new int[] { 5, 8 });
-        INDArray array1 = Nd4j.create(new int[] { 2, 4 });
-        array0.
+    public void testINDArrayGet() {
+        INDArray array = Nd4j.create(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 
-                assertThat(Nd4j.concat(1, array0, array1), is(Nd4j.create(new int[][] { { 5, 8 }, { 2, 4 } })));
+        assertThat(array.get(NDArrayIndex.indices(1, 3, 5)), is(Nd4j.create(new double[] { 1, 3, 5 })));
+    }
+
+    @Test
+    public void testINDArraySum() {
+        INDArray array = Nd4j.create(new double[] { -2.0, 4, 8 });
+
+        assertThat(array.sumNumber().doubleValue(), is(10.0));
     }
 }

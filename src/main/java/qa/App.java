@@ -25,6 +25,7 @@ import org.nd4j.linalg.api.iter.NdIndexIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.random.impl.Range;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.rng.NativeRandom;
 
 import org.nd4j.linalg.api.rng.DefaultRandom;

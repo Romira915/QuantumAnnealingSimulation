@@ -5,6 +5,8 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.transforms.same.Abs;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.ops.NDMath;
+import org.nd4j.linalg.indexing.INDArrayIndex;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import static org.junit.Assert.*;
 
@@ -26,4 +28,5 @@ public class QuantumAnnealingTest {
 
         assertThat(array.sumNumber().doubleValue(), is(10.0));
     }
+
 }
