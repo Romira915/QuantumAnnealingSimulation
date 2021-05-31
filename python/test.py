@@ -28,3 +28,14 @@ print(H_q)
 
 s = np.sum(sigma_x)
 print(s)
+
+i = 2
+N = 2
+
+array = np.array([i ^ (1 << n) for n in range(N)])
+for n in range(N):
+    print(format(i, "02b") + " ^ " + format(1 << n, "02b"))
+
+print()
+for i in range(2 ** N):
+    print(format(i, "02b"))

@@ -5,6 +5,9 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.Arrays;
 
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.ChartMouseEvent;
@@ -66,19 +69,14 @@ public class PlotChart {
      * yData.columnLength (if isRowVectors is false, yData.rowLength) keys.length ==
      * yData.rowLength (if isRowVectors is false, yData.columnLength)
      */
-    public static XYDataset createXYDataset(INDArray xData, INDArray yData, String[] keys, boolean isRowVectors) {
+    public static XYDataset createXYDataset(RealVector xData, RealMatrix yData, String[] keys, boolean isRowVectors) {
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
-
-        if (yData.isVector()) {
-            yData = yData.reshape(1, yData.length());
-            isRowVectors = true;
-        }
 
         int dataNum = 0;
         if (isRowVectors) {
-            dataNum = yData.rows();
+            dataNum = yData.getRowDimension();
         } else {
-            dataNum = yData.columns();
+            dataNum = yData.getColumnDimension();
         }
 
         // Data shape check
@@ -90,13 +88,18 @@ public class PlotChart {
 
         for (int i = 0; i < dataNum; i++) {
             XYSeries xySeries = new XYSeries(keys[i]);
-            INDArray yValues = isRowVectors ? yData.getRow(i) : yData.getColumn(i);
-            for (int j = 0; j < yValues.length(); j++) {
-                xySeries.add(xData.getNumber(j), yValues.getNumber(j));
+            double yValues[] = isRowVectors ? yData.getRow(i) : yData.getColumn(i);
+            for (int j = 0; j < yValues.length; j++) {
+                xySeries.add(xData.getEntry(j), yValues[j]);
             }
             xySeriesCollection.addSeries(xySeries);
         }
 
         return xySeriesCollection;
+    }
+
+    public static XYDataset createXYDataset(RealVector xData, RealVector yData, String key) {
+        return PlotChart.createXYDataset(xData, MatrixUtils.createRowRealMatrix(yData.toArray()), new String[] { key },
+                true);
     }
 }

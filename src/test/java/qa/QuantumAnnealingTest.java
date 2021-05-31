@@ -10,16 +10,20 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 
 import static org.junit.Assert.*;
 
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealVector;
+
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class QuantumAnnealingTest {
     @Test
     public void testAmp2prob() {
-        INDArray array = Nd4j.create(new double[] { -2.4, 5.2, 0.0, -0.5, 0.2 });
+        RealVector array = MatrixUtils.createRealVector(new double[] { -2.4, 5.2, 0.0, -0.5, 0.2 });
         array = QuantumAnnealing.amp2prob(array);
 
-        assertThat(array, is(Nd4j.create(new double[] { 2.4 * 2.4, 5.2 * 5.2, 0.0 * 0.0, 0.5 * 0.5, 0.2 * 0.2 })));
+        assertThat(array, is(
+                MatrixUtils.createRealVector(new double[] { 2.4 * 2.4, 5.2 * 5.2, 0.0 * 0.0, 0.5 * 0.5, 0.2 * 0.2 })));
     }
 
     @Test

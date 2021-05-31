@@ -3,6 +3,7 @@
  */
 package qa;
 
+import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -12,6 +13,8 @@ import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
 import java.util.function.BiFunction;
+
+import javax.print.event.PrintServiceAttributeListener;
 
 public class AppTest {
     @Test
@@ -33,7 +36,7 @@ public class AppTest {
     public void testINDArrayGet() {
         INDArray array = Nd4j.create(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 
-        assertThat(array.get(NDArrayIndex.indices(1, 3, 5)), is(Nd4j.create(new double[] { 1, 3, 5 })));
+        assertThat(array.get(NDArrayIndex.indices(new long[] { 1, 3, 5 })), is(Nd4j.create(new double[] { 1, 3, 5 })));
     }
 
     @Test
@@ -41,5 +44,19 @@ public class AppTest {
         INDArray array = Nd4j.create(new double[] { -2.0, 4, 8 });
 
         assertThat(array.sumNumber().doubleValue(), is(10.0));
+    }
+
+    @Test
+    public void testFinal() {
+        for (int i = 0; i < 10; i++) {
+            final int finalI = i;
+
+            assertThat(finalI, is(i));
+        }
+    }
+
+    @Test
+    public void testComplex() {
+        Complex complex = new Complex(2, 5);
     }
 }
