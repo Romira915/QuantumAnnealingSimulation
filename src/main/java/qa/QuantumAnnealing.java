@@ -31,7 +31,7 @@ import checkers.units.quals.g;
 public class QuantumAnnealing {
     private final int Tau = (int) Math.pow(2, 5);
     private final int N;
-    private final int h = 1;
+    private final double hBar = 1;
     private RealVector E;
     private BiFunction<Double, FieldVector<Complex>, Complex>[] diffeqArray;
 
@@ -39,7 +39,7 @@ public class QuantumAnnealing {
         FieldVector<Complex> dydt = new ArrayFieldVector<>(ComplexField.getInstance(), vec.getDimension());
 
         for (int i = 0; i < this.diffeqArray.length; i++) {
-            dydt.setEntry(i, QuantumAnnealing.j.multiply(this.diffeqArray[i].apply(t, vec)).multiply(-1 * h));
+            dydt.setEntry(i, QuantumAnnealing.j.multiply(this.diffeqArray[i].apply(t, vec)).multiply(1 / hBar));
         }
 
         return dydt;
