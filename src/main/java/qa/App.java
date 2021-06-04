@@ -56,27 +56,12 @@ public class App {
         return dataset;
     }
 
-    public static void main(String[] args) {
-
-        final int N = 5;
-
+    private static void timeIndependent(QuantumAnnealing quantumAnnealing) {
         try {
             Files.createDirectories(Paths.get("./amp"));
         } catch (Exception e) {
             // TODO: handle exception
         }
-
-        Random rand = Nd4j.getRandom();
-        rand.setSeed(1042);
-        double rndVec[] = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N) }, rand).toDoubleVector();
-        RealVector E = new ArrayRealVector(rndVec);
-
-        PlotChart gaussianChart = new PlotChart("Gaussian", "x", "y", PlotChart
-                .createXYDataset(new ArrayRealVector(Nd4j.arange(0, (int) Math.pow(2, N)).toDoubleVector()), E, "E"));
-        gaussianChart.saveChartAsJPEG("gaussian.jpg", 800, 600);
-        // gaussianChart.showChart();
-
-        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
 
         RealMatrix H = null;
         double step = 0.01;
@@ -118,6 +103,23 @@ public class App {
                 PlotChart.createXYDataset(new ArrayRealVector(time_steps), eigenValues, eigenChartKeys, true));
         eigenValueChart.saveChartAsJPEG("eigenValue.jpg", 800, 600);
         // eigenValueChart.showChart();
+    }
+
+    public static void main(String[] args) {
+
+        final int N = 5;
+
+        Random rand = Nd4j.getRandom();
+        rand.setSeed(1042);
+        double rndVec[] = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N) }, rand).toDoubleVector();
+        RealVector E = new ArrayRealVector(rndVec);
+
+        PlotChart gaussianChart = new PlotChart("Gaussian", "x", "y", PlotChart
+                .createXYDataset(new ArrayRealVector(Nd4j.arange(0, (int) Math.pow(2, N)).toDoubleVector()), E, "E"));
+        gaussianChart.saveChartAsJPEG("gaussian.jpg", 800, 600);
+        // gaussianChart.showChart();
+
+        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
 
         FieldVector<Complex> y0 = new ArrayFieldVector<Complex>((int) Math.pow(2, quantumAnnealing.getN()),
                 new Complex(Math.pow(2, -quantumAnnealing.getN() / 2)));

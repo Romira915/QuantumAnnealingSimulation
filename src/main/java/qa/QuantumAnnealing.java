@@ -39,7 +39,7 @@ public class QuantumAnnealing {
         FieldVector<Complex> dydt = new ArrayFieldVector<>(ComplexField.getInstance(), vec.getDimension());
 
         for (int i = 0; i < this.diffeqArray.length; i++) {
-            dydt.setEntry(i, QuantumAnnealing.j.multiply(this.diffeqArray[i].apply(t, vec)).multiply(1 / hBar));
+            dydt.setEntry(i, QuantumAnnealing.j.multiply(this.diffeqArray[i].apply(t, vec)).multiply(-1 / hBar));
         }
 
         return dydt;
