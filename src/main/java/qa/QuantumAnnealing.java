@@ -32,8 +32,12 @@ public class QuantumAnnealing {
     private final int Tau = (int) Math.pow(2, 5);
     private final int N;
     private final double hBar = 1;
+    private int trotterN;
     private RealVector E;
+    private RealMatrix isingModel;
+    private RealVector state[];
     private BiFunction<Double, FieldVector<Complex>, Complex>[] diffeqArray;
+    private boolean isQUBO;
 
     public BiFunction<Double, FieldVector<Complex>, FieldVector<Complex>> simdiffeq_rhs = (t, vec) -> {
         FieldVector<Complex> dydt = new ArrayFieldVector<>(ComplexField.getInstance(), vec.getDimension());
@@ -61,12 +65,85 @@ public class QuantumAnnealing {
         this.E = E;
     }
 
+    public QuantumAnnealing(RealMatrix ising, boolean isQUBO) {
+        this.N = ising.getRowDimension();
+        this.isingModel = ising;
+        this.isQUBO = isQUBO;
+
+    }
+
     private double scheduleE(double time) {
         return time / this.Tau;
     }
 
     private double scheduleG(double time) {
         return (Tau - time) / this.Tau;
+    }
+
+    private int spin(double value) {
+        int v = (int) (value);
+
+        return this.spin(v);
+    }
+
+    private int spin(int value) {
+        if (this.isQUBO) {
+            return 2 * value - 1;
+        } else {
+            return value;
+        }
+    }
+
+    private double classicalTrotterEnergy(int trotter) {
+        double E = 0;
+
+        for (int i = 0; i < this.N; i++) {
+            for (int j = 0; j < this.N; j++) {
+                E += -this.isingModel.getEntry(i, j) * this.spin(this.state[trotter].getEntry(i))
+                        * this.spin(this.state[trotter].getEntry(j));
+            }
+        }
+
+        return E;
+    }
+
+    private double classicalEnergy() {
+        double E = 0;
+
+        for (int i = 0; i < this.N; i++) {
+            for (int j = 0; j < this.N; j++) {
+                for (int k = 0; k < this.trotterN; k++) {
+                    E += -(this.isingModel.getEntry(i, j) / this.trotterN) * this.spin(this.state[k].getEntry(i))
+                            * this.spin(this.state[k].getEntry(j));
+                }
+            }
+        }
+
+        return E;
+    }
+
+    private double quantumEnergy(double T, double gamma) {
+        double E = 0;
+        double beta = 1 / T;
+
+        for (int i = 0; i < this.N; i++) {
+            for (int k = 0; k < this.trotterN; k++) {
+                E += this.spin(this.state[k].getEntry(i)) * this.spin(this.state[(k + 1) % this.trotterN].getEntry(i));
+            }
+        }
+
+        double bias = (beta * gamma) / this.trotterN;
+        E *= -1 / (2 * beta) * Math.log(Math.cosh(bias) / Math.sinh(bias));
+
+        return E;
+    }
+
+    private double energy(int t) {
+        double E = 0;
+
+        E = this.scheduleE(t) * this.classicalEnergy() + this.quantumEnergy(t, this.scheduleG(t));
+
+        return E;
     }
 
     public RealMatrix create_tfim(double time, RealMatrix hamiltonian) {
@@ -170,5 +247,9 @@ public class QuantumAnnealing {
 
     public static INDArray apacheVectorToINDArray(RealVector matrix) {
         return Nd4j.create(matrix.toArray());
+    }
+
+    public static RealVector[] initIsingState(int size, int trotterN) {
+        return null;
     }
 }
