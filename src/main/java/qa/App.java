@@ -56,7 +56,7 @@ public class App {
         return dataset;
     }
 
-    private static void timeIndependent(QuantumAnnealing quantumAnnealing) {
+    private static void timeIndependent(QuantumAnnealing quantumAnnealing, int N) {
         try {
             Files.createDirectories(Paths.get("./amp"));
         } catch (Exception e) {
@@ -86,8 +86,8 @@ public class App {
             if (t == quantumAnnealing.getTau()) {
                 XYDataset dataset = PlotChart.createXYDataset(
                         QuantumAnnealing.iNDArrayToApacheVector(Nd4j.arange(0, amp.getDimension())),
-                        QuantumAnnealing
-                                .iNDArrayToApacheMatrix(Nd4j.create(new double[][] { amp.toArray(), E.toArray() })),
+                        QuantumAnnealing.iNDArrayToApacheMatrix(
+                                Nd4j.create(new double[][] { amp.toArray(), quantumAnnealing.getE().toArray() })),
                         new String[] { "probability", "E" }, true);
                 PlotChart tauChart = new PlotChart("", "x", "y", dataset);
                 tauChart.saveChartAsJPEG("tau_gaussian.jpg", 1000, 800);
