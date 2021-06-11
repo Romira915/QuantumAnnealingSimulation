@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.optim.PointValuePair;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,5 +33,4 @@ public class QuantumAnnealingTest {
 
         assertThat(array.sumNumber().doubleValue(), is(10.0));
     }
-
 }

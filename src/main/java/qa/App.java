@@ -22,6 +22,7 @@ import org.apache.commons.math3.linear.FieldVector;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.optim.PointValuePair;
 import org.apache.commons.math3.random.UncorrelatedRandomVectorGenerator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -38,6 +39,8 @@ import org.nd4j.linalg.api.ops.random.impl.Range;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.rng.NativeRandom;
+
+import checkers.units.quals.A;
 
 import org.nd4j.linalg.api.rng.DefaultRandom;
 import org.nd4j.linalg.api.rng.Random;
@@ -105,8 +108,7 @@ public class App {
         // eigenValueChart.showChart();
     }
 
-    public static void main(String[] args) {
-
+    public static void execQA() {
         final int N = 5;
 
         Random rand = Nd4j.getRandom();
@@ -133,5 +135,39 @@ public class App {
                 QuantumAnnealing.iNDArrayToApacheVector(Nd4j.arange((int) Math.pow(2, N))), psi, "result");
         PlotChart resultPlotChart = new PlotChart("result", "|ψ|^2", "p", resultDataset);
         resultPlotChart.showChart();
+    }
+
+    public static void main(String[] args) {
+        int N = 10;
+        int seed = 2;
+        Random random = Nd4j.getRandom();
+        random.setSeed(seed);
+
+        INDArray numbers = Nd4j.rand(0, 1, random, N);
+        System.out.println(numbers);
+        double sum = numbers.sumNumber().doubleValue();
+        INDArray qubo = Nd4j.zeros(N, N);
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                qubo.putScalar(i, j, 4 * numbers.getDouble(i) * numbers.getDouble(j));
+            }
+        }
+
+        for (int i = 0; i < N; i++) {
+            qubo.putScalar(i, i, qubo.getDouble(i, i) - 4 * sum * numbers.getDouble(i));
+        }
+
+        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), true,
+                32, 512, 100, 512, seed);
+
+        quantumAnnealing.execQMC();
+
+        RealVector resultState = quantumAnnealing.getMinEnergyState();
+        System.out.println("state" + resultState);
+        RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
+        double a = resultState.dotProduct(apacheNumbers);
+        System.out.println("a: " + a);
+        System.out.println("b: " + (sum - a));
     }
 }
