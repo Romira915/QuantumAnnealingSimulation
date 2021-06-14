@@ -36,6 +36,9 @@ public class QuantumAnnealing {
     private final int reverseSpinN = 1;
     private int reverseTrotterN;
     private int Tau = (int) Math.pow(2, 5);
+    private int time = 0;
+    private int T;
+    private int initGamma = 1;
     private int trotterN;
     private RealVector E;
     private RealMatrix isingModel;
@@ -77,20 +80,21 @@ public class QuantumAnnealing {
         this.E = E;
     }
 
-    public QuantumAnnealing(RealMatrix ising, boolean isQUBO, int trotterN, int Tau, int mStep, int aStep, int seed) {
+    public QuantumAnnealing(RealMatrix ising, boolean isQUBO, int trotterN, int T, int mStep, int aStep, int seed) {
+        this.jRandom = new java.util.Random(seed);
+        this.nRandom = Nd4j.getRandom();
+        this.nRandom.setSeed(seed);
+
         this.N = ising.getRowDimension();
         this.isingModel = ising;
         this.isQUBO = isQUBO;
         this.trotterN = trotterN;
-        this.jRandom = new java.util.Random(seed);
-        this.nRandom = Nd4j.getRandom();
-        this.nRandom.setSeed(seed);
         this.state = isQUBO ? QuantumAnnealing.initQUBOState(this.N, trotterN, this.nRandom)
                 : QuantumAnnealing.initIsingState(this.N, trotterN, this.nRandom);
-        this.Tau = Tau;
+        this.T = T;
         this.monteCarloStep = mStep;
         this.annealingStep = aStep;
-        this.reverseTrotterN = trotterN / 2;
+        this.reverseTrotterN = 1;
     }
 
     private double scheduleE(double time) {
@@ -108,11 +112,12 @@ public class QuantumAnnealing {
     }
 
     private int spin(int value) {
-        if (this.isQUBO) {
-            return 2 * value - 1;
-        } else {
-            return value;
-        }
+        return value;
+        // if (this.isQUBO) {
+        // return 2 * value - 1;
+        // } else {
+        // return value;
+        // }
     }
 
     private double classicalTrotterEnergy(int trotter) {
@@ -145,7 +150,7 @@ public class QuantumAnnealing {
 
     private double quantumEnergy(RealMatrix state, double T, double gamma) {
         double E = 0;
-        double beta = 1 / T;
+        double beta = 1.0 / T;
 
         for (int i = 0; i < this.N; i++) {
             for (int k = 0; k < this.trotterN; k++) {
@@ -159,33 +164,26 @@ public class QuantumAnnealing {
         return E;
     }
 
-    private double energy(RealMatrix state, int t) {
+    private double energy(RealMatrix state, double t, double gamma) {
         double E = 0;
 
-        E = this.scheduleE(t) * this.classicalEnergy(state) + this.quantumEnergy(state, t, this.scheduleG(t));
+        // E = this.scheduleE(t) * this.classicalEnergy(state) +
+        // this.quantumEnergy(state, t, this.scheduleG(t));
+        double c = this.scheduleE(this.time) * this.classicalEnergy(state);
+        double q = this.quantumEnergy(state, t, gamma);
+        E = c + q;
 
         return E;
     }
 
-    private double diffEnergy(RealMatrix before, RealMatrix after, double t) {
+    private double diffEnergy(RealMatrix before, RealMatrix after, double t, double gamma) {
         double deltaE = 0;
 
-        deltaE = this.scheduleE(t) * this.classicalEnergy(after) + this.quantumEnergy(after, t, this.scheduleG(t));
-        deltaE -= this.scheduleE(t) * this.classicalEnergy(before) + this.quantumEnergy(before, t, this.scheduleG(t));
+        double a = this.energy(after, t, gamma);
+        double b = this.energy(before, t, gamma);
+        deltaE = a - b;
 
         return deltaE;
-    }
-
-    private static RealMatrix initState(int size, int trotterN, INDArray source,
-            org.nd4j.linalg.api.rng.Random random) {
-        RealMatrix state;
-        INDArray probs = Nd4j.valueArrayOf(source.length(), 1.0 / source.length());
-
-        INDArray initArray = Nd4j.create(source.dataType(), trotterN, size);
-        initArray = Nd4j.choice(source, probs, initArray, random);
-        state = QuantumAnnealing.iNDArrayToApacheMatrix(initArray);
-
-        return state;
     }
 
     public RealMatrix create_tfim(double time, RealMatrix hamiltonian) {
@@ -272,16 +270,23 @@ public class QuantumAnnealing {
     }
 
     public void execQMC() {
-        for (double t = 0; t <= this.Tau; t += (double) this.Tau / this.annealingStep) {
-            for (int j = 0; j < this.monteCarloStep; j++) {
+        double gamma = this.initGamma;
+        double gammaStepValue = (double) this.initGamma / (this.monteCarloStep * this.annealingStep);
+        this.Tau = this.annealingStep;
+
+        for (double temperature = this.T; temperature >= 1; temperature -= (double) this.T / this.annealingStep) {
+            for (int g = 0; g < this.monteCarloStep; g++) {
                 RealMatrix nextState = this.randomSpinReverse();
 
-                double deltaE = this.diffEnergy(this.state, nextState, t);
-                double p = Math.min(1, Math.exp(-deltaE / t));
+                double deltaE = this.diffEnergy(this.state, nextState, temperature, gamma);
+                double p = Math.min(1, Math.exp(-deltaE / temperature));
                 if (QuantumAnnealing.randomBoolean(p, this.jRandom)) {
                     this.state = nextState;
                 }
+
+                gamma -= gammaStepValue;
             }
+            this.time += 1;
         }
     }
 
@@ -292,6 +297,18 @@ public class QuantumAnnealing {
         }
 
         return this.state.getRowVector(stateEnergy.getMinIndex());
+    }
+
+    private static RealMatrix initState(int size, int trotterN, INDArray source,
+            org.nd4j.linalg.api.rng.Random random) {
+        RealMatrix state;
+        INDArray probs = Nd4j.valueArrayOf(source.length(), 1.0 / source.length());
+
+        INDArray initArray = Nd4j.create(source.dataType(), trotterN, size);
+        initArray = Nd4j.choice(source, probs, initArray, random);
+        state = QuantumAnnealing.iNDArrayToApacheMatrix(initArray);
+
+        return state;
     }
 
     public static FieldVector<Complex> getSubVector(FieldVector<Complex> vector, int indices[]) {
