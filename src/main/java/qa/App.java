@@ -40,6 +40,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.rng.NativeRandom;
 
+import checkers.igj.quals.I;
 import checkers.units.quals.A;
 import checkers.units.quals.m;
 
@@ -139,16 +140,14 @@ public class App {
     }
 
     public static void main(String[] args) {
-        int N = 40;
+        int N = 50;
         int seed = (int) System.currentTimeMillis();
         Random random = Nd4j.getRandom();
         random.setSeed(seed);
 
         INDArray numbers = Nd4j.rand(0, 1, random, N);
-        System.out.println(numbers);
         double sum = numbers.sumNumber().doubleValue();
-        double m = (double) N / 2 * 0.2;
-        System.out.println("m: " + m);
+        double m = sum * 0.5;
         INDArray qubo = Nd4j.zeros(N, N);
 
         for (int i = 0; i < N; i++) {
@@ -159,19 +158,23 @@ public class App {
         }
 
         for (int i = 0; i < N; i++) {
-            double value = qubo.getDouble(i, i) - 4 * sum * numbers.getDouble(i);
+            double value = qubo.getDouble(i) - 4 * m * numbers.getDouble(i);
+
             qubo.putScalar(i, i, value);
         }
 
         QuantumAnnealing quantumAnnealing = new QuantumAnnealing(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), true, 8,
-                5, 500, 800, seed);
+                50, 100, 500, 500, seed, true);
 
         quantumAnnealing.execQMC();
 
         RealVector resultState = quantumAnnealing.getMinEnergyState();
-        System.out.println("state" + resultState);
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
         // resultState = resultState.map((v) -> (v + 1) / 2);
+        System.out.println(numbers);
+        System.out.println("sum:" + sum);
+        System.out.println("m:" + m);
+        System.out.println("state" + resultState);
         double a = resultState.dotProduct(apacheNumbers);
         System.out.println("a: " + a);
         System.out.println("b: " + (sum - a));
