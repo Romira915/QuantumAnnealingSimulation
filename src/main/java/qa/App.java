@@ -45,91 +45,99 @@ import org.nd4j.linalg.eigen.Eigen;
 
 public class App {
 
-    private static XYDataset createDataset(INDArray f) {
-        final XYSeries data = new XYSeries("normal");
-        for (int i = 0; i < f.length(); i++) {
-            data.add(i, f.getDouble(i));
+        private static XYDataset createDataset(INDArray f) {
+                final XYSeries data = new XYSeries("normal");
+                for (int i = 0; i < f.length(); i++) {
+                        data.add(i, f.getDouble(i));
+                }
+
+                final XYSeriesCollection dataset = new XYSeriesCollection();
+                dataset.addSeries(data);
+                return dataset;
         }
 
-        final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(data);
-        return dataset;
-    }
+        public static void main(String[] args) {
 
-    public static void main(String[] args) {
+                final int N = 5;
 
-        final int N = 5;
+                try {
+                        Files.createDirectories(Paths.get("./amp"));
+                } catch (Exception e) {
+                        // TODO: handle exception
+                }
 
-        try {
-            Files.createDirectories(Paths.get("./amp"));
-        } catch (Exception e) {
-            // TODO: handle exception
+                Random rand = Nd4j.getRandom();
+                rand.setSeed(1042);
+                double rndVec[] = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N) }, rand).toDoubleVector();
+                RealVector E = new ArrayRealVector(rndVec);
+
+                PlotChart gaussianChart = new PlotChart("Gaussian", "x", "y", PlotChart.createXYDataset(
+                                new ArrayRealVector(Nd4j.arange(0, (int) Math.pow(2, N)).toDoubleVector()), E, "E"));
+                gaussianChart.saveChartAsJPEG("gaussian.jpg", 800, 600);
+                // gaussianChart.showChart();
+
+                QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
+
+                RealMatrix H = null;
+                double step = 0.01;
+                double time_steps[] = Nd4j.arange(0, quantumAnnealing.getTau() + step, step).toDoubleVector();
+                // RealVector eigenValues = Nd4j.zeros((int) Math.pow(2, N), time_steps.length);
+                RealMatrix eigenValues = new Array2DRowRealMatrix((int) Math.pow(2, N), time_steps.length);
+                int eigenValuesIndex = 0;
+                for (double t : time_steps) {
+                        H = quantumAnnealing.create_tfim(t, H);
+                        EigenDecomposition eigenDecomposition = new EigenDecomposition(H);
+                        RealMatrix eigenVectors = eigenDecomposition.getV(); // deepcopy
+                        eigenValues.setColumn(eigenValuesIndex, eigenDecomposition.getRealEigenvalues());
+
+                        eigenValuesIndex += 1;
+
+                        RealVector amp = QuantumAnnealing.amp2prob(eigenVectors.getColumnVector(0));
+                        PlotChart probabilityDensityChart = new PlotChart("probabilityDensity", "x", "y",
+                                        PlotChart.createXYDataset(
+                                                        QuantumAnnealing.iNDArrayToApacheVector(
+                                                                        Nd4j.arange(0, amp.getDimension())),
+                                                        amp, "baseState"));
+                        probabilityDensityChart.setYRange(0, 1);
+                        probabilityDensityChart.saveChartAsJPEG("./amp/amp" + String.format("%.2f", t) + ".jpg", 600,
+                                        400);
+
+                        if (t == quantumAnnealing.getTau()) {
+                                XYDataset dataset = PlotChart.createXYDataset(
+                                                QuantumAnnealing.iNDArrayToApacheVector(
+                                                                Nd4j.arange(0, amp.getDimension())),
+                                                QuantumAnnealing.iNDArrayToApacheMatrix(Nd4j
+                                                                .create(new double[][] { amp.toArray(), E.toArray() })),
+                                                new String[] { "probability", "E" }, true);
+                                PlotChart tauChart = new PlotChart("", "x", "y", dataset);
+                                tauChart.saveChartAsJPEG("tau_gaussian.jpg", 1000, 800);
+                        }
+                }
+
+                String eigenChartKeys[] = Arrays.stream(Nd4j.arange(0, eigenValues.getRowDimension()).toIntVector())
+                                .mapToObj(String::valueOf).toArray(String[]::new);
+
+                System.out.println("time: " + time_steps.length + " rowsValues: " + eigenValues.getRowDimension()
+                                + " columnValues: " + eigenValues.getColumnDimension() + " Keys: "
+                                + eigenChartKeys.length);
+                PlotChart eigenValueChart = new PlotChart("eigenValue", "t/τ", "E", PlotChart
+                                .createXYDataset(new ArrayRealVector(time_steps), eigenValues, eigenChartKeys, true));
+                eigenValueChart.saveChartAsJPEG("eigenValue.jpg", 800, 600);
+                // eigenValueChart.showChart();
+
+                FieldVector<Complex> y0 = new ArrayFieldVector<Complex>((int) Math.pow(2, quantumAnnealing.getN()),
+                                new Complex(Math.pow(2, -quantumAnnealing.getN() / 2)));
+                quantumAnnealing.generateDiffeqArray();
+                ComplexOde complexOde = new ComplexOde(quantumAnnealing.simdiffeq_rhs);
+                complexOde.setInitValue(y0);
+
+                FieldVector<Complex> result = complexOde.integrateToTau(quantumAnnealing.getTau());
+                RealVector psi = QuantumAnnealing.amp2prob(result);
+                XYDataset resultDataset = PlotChart.createXYDataset(
+                                QuantumAnnealing.iNDArrayToApacheVector(Nd4j.arange((int) Math.pow(2, N))), psi,
+                                "result");
+                PlotChart resultPlotChart = new PlotChart("result", "|ψ|^2", "p", resultDataset);
+                resultPlotChart.showChart();
+
         }
-
-        Random rand = Nd4j.getRandom();
-        rand.setSeed(1042);
-        double rndVec[] = Nd4j.randn(0.0, N / 2.0, new long[] { (long) Math.pow(2, N) }, rand).toDoubleVector();
-        RealVector E = new ArrayRealVector(rndVec);
-
-        PlotChart gaussianChart = new PlotChart("Gaussian", "x", "y", PlotChart
-                .createXYDataset(new ArrayRealVector(Nd4j.arange(0, (int) Math.pow(2, N)).toDoubleVector()), E, "E"));
-        gaussianChart.saveChartAsJPEG("gaussian.jpg", 800, 600);
-        // gaussianChart.showChart();
-
-        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(N, E);
-
-        RealMatrix H = null;
-        double step = 0.01;
-        double time_steps[] = Nd4j.arange(0, quantumAnnealing.getTau() + step, step).toDoubleVector();
-        // RealVector eigenValues = Nd4j.zeros((int) Math.pow(2, N), time_steps.length);
-        RealMatrix eigenValues = new Array2DRowRealMatrix((int) Math.pow(2, N), time_steps.length);
-        int eigenValuesIndex = 0;
-        for (double t : time_steps) {
-            H = quantumAnnealing.create_tfim(t, H);
-            EigenDecomposition eigenDecomposition = new EigenDecomposition(H);
-            RealMatrix eigenVectors = eigenDecomposition.getV(); // deepcopy
-            eigenValues.setColumn(eigenValuesIndex, eigenDecomposition.getRealEigenvalues());
-
-            eigenValuesIndex += 1;
-
-            RealVector amp = QuantumAnnealing.amp2prob(eigenVectors.getColumnVector(0));
-            PlotChart probabilityDensityChart = new PlotChart("probabilityDensity", "x", "y", PlotChart.createXYDataset(
-                    QuantumAnnealing.iNDArrayToApacheVector(Nd4j.arange(0, amp.getDimension())), amp, "baseState"));
-            probabilityDensityChart.setYRange(0, 1);
-            probabilityDensityChart.saveChartAsJPEG("./amp/amp" + String.format("%.2f", t) + ".jpg", 600, 400);
-
-            if (t == quantumAnnealing.getTau()) {
-                XYDataset dataset = PlotChart.createXYDataset(
-                        QuantumAnnealing.iNDArrayToApacheVector(Nd4j.arange(0, amp.getDimension())),
-                        QuantumAnnealing
-                                .iNDArrayToApacheMatrix(Nd4j.create(new double[][] { amp.toArray(), E.toArray() })),
-                        new String[] { "probability", "E" }, true);
-                PlotChart tauChart = new PlotChart("", "x", "y", dataset);
-                tauChart.saveChartAsJPEG("tau_gaussian.jpg", 1000, 800);
-            }
-        }
-
-        String eigenChartKeys[] = Arrays.stream(Nd4j.arange(0, eigenValues.getRowDimension()).toIntVector())
-                .mapToObj(String::valueOf).toArray(String[]::new);
-
-        System.out.println("time: " + time_steps.length + " rowsValues: " + eigenValues.getRowDimension()
-                + " columnValues: " + eigenValues.getColumnDimension() + " Keys: " + eigenChartKeys.length);
-        PlotChart eigenValueChart = new PlotChart("eigenValue", "t/τ", "E",
-                PlotChart.createXYDataset(new ArrayRealVector(time_steps), eigenValues, eigenChartKeys, true));
-        eigenValueChart.saveChartAsJPEG("eigenValue.jpg", 800, 600);
-        // eigenValueChart.showChart();
-
-        FieldVector<Complex> y0 = new ArrayFieldVector<Complex>((int) Math.pow(2, quantumAnnealing.getN()),
-                new Complex(Math.pow(2, -quantumAnnealing.getN() / 2)));
-        quantumAnnealing.generateDiffeqArray();
-        ComplexOde complexOde = new ComplexOde(quantumAnnealing.simdiffeq_rhs);
-        complexOde.setInitValue(y0);
-
-        FieldVector<Complex> result = complexOde.integrateToTau(quantumAnnealing.getTau());
-        RealVector psi = QuantumAnnealing.amp2prob(result);
-        XYDataset resultDataset = PlotChart.createXYDataset(
-                QuantumAnnealing.iNDArrayToApacheVector(Nd4j.arange((int) Math.pow(2, N))), psi, "result");
-        PlotChart resultPlotChart = new PlotChart("result", "|ψ|^2", "p", resultDataset);
-        resultPlotChart.showChart();
-    }
 }
