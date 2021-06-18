@@ -140,37 +140,41 @@ public class App {
     }
 
     public static void main(String[] args) {
-        int N = 10;
+        int N = 50;
         int seed = (int) System.currentTimeMillis();
         Random random = Nd4j.getRandom();
         random.setSeed(seed);
 
         INDArray numbers = Nd4j.rand(0, 1, random, N);
         double sum = numbers.sumNumber().doubleValue();
-        double m = sum * 0.5;
+        double m = sum * 0.7;
         INDArray qubo = Nd4j.zeros(N, N);
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                double value = 4 * numbers.getDouble(i) * numbers.getDouble(j);
-                qubo.putScalar(i, j, value);
+                if (i <= j) {
+                    qubo.putScalar(i, j, 0.25 * numbers.getDouble(i) * numbers.getDouble(j));
+                }
             }
         }
 
         for (int i = 0; i < N; i++) {
-            double value = qubo.getDouble(i) - 4 * m * numbers.getDouble(i);
-
-            qubo.putScalar(i, i, value);
+            double value = 0;
+            for (int j = 0; j < N; j++) {
+                value += numbers.getDouble(j) - m;
+            }
+            value *= 0.5;
+            qubo.putScalar(i, i, qubo.getDouble(i) + value * numbers.getDouble(i));
         }
 
-        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), true, 4,
-                10, 10, 5000, 100, seed, true);
+        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
+                8, 0.02, 1000, 5000, 100, seed, true);
 
         quantumAnnealing.execQMC();
 
         RealVector resultState = quantumAnnealing.getMinEnergyState();
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
-        // resultState = resultState.map((v) -> (v + 1) / 2);
+        resultState = resultState.map((v) -> (v + 1) / 2);
         System.out.println(numbers);
         System.out.println("sum:" + sum);
         System.out.println("m:" + m);
@@ -178,5 +182,6 @@ public class App {
         double a = resultState.dotProduct(apacheNumbers);
         System.out.println("a: " + a);
         System.out.println("b: " + (sum - a));
+
     }
 }
