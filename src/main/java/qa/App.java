@@ -158,13 +158,13 @@ public class App {
         }
 
         for (int i = 0; i < N; i++) {
-            double value = qubo.getDouble(i) - 4 * m * numbers.getDouble(i);
+            double value = qubo.getDouble(i) - 4 * sum * numbers.getDouble(i);
 
             qubo.putScalar(i, i, value);
         }
 
-        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), true, 4,
-                10, 10, 5000, 100, seed, true);
+        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), true,
+                16, 1, 1000000, 1000, 1000, seed, true);
 
         quantumAnnealing.execQMC();
 

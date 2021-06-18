@@ -284,7 +284,7 @@ public class QuantumAnnealing {
 
     public void execQMC() {
         double gamma = this.initGamma;
-        double deltaGamma = (double) this.initGamma / (this.monteCarloStep * this.annealingStep);
+        double deltaGamma = (double) this.initGamma / (this.annealingStep);
         this.Tau = this.annealingStep;
         double decrease = 0;
         double increase = 0;
@@ -308,8 +308,8 @@ public class QuantumAnnealing {
                     }
                 }
 
-                gamma -= deltaGamma;
             }
+            gamma -= deltaGamma;
         }
 
         System.out.println("increase:" + increase);
