@@ -30,6 +30,7 @@ import org.nd4j.nativeblas.Nd4jCpu.static_bidirectional_rnn;
 import org.nd4j.shade.protobuf.Extension;
 
 import checkers.units.quals.g;
+import qa.SchedulerQA.HyperParameter;
 
 public class QuantumAnnealing {
     private final int N;
@@ -102,6 +103,12 @@ public class QuantumAnnealing {
         this.needDebugLog = needDebugLog;
     }
 
+    public QuantumAnnealing(RealMatrix ising, boolean isQUBO, HyperParameter hyperParameter, int seed,
+            boolean needDebugLog) {
+        this(ising, isQUBO, hyperParameter.trotterN, hyperParameter.initBeta, hyperParameter.initGamma,
+                hyperParameter.monteCarloStep, hyperParameter.annealingStep, seed, needDebugLog);
+    }
+
     private double scheduleE(double time) {
         return time / this.Tau;
     }
@@ -143,10 +150,8 @@ public class QuantumAnnealing {
         for (int i = 0; i < this.N; i++) {
             for (int j = 0; j < this.N; j++) {
                 for (int k = 0; k < this.trotterN; k++) {
-                    if (i <= j) {
-                        E += -this.isingModel.getEntry(i, j) * this.spin(state.getEntry(k, i))
-                                * this.spin(state.getEntry(k, j));
-                    }
+                    E += -this.isingModel.getEntry(i, j) * this.spin(state.getEntry(k, i))
+                            * this.spin(state.getEntry(k, j));
                 }
             }
         }
@@ -364,7 +369,7 @@ public class QuantumAnnealing {
         return this.state.copy();
     }
 
-    public RealVector getMinEnergyState() {
+    public Pair<RealVector, Double> getMinEnergyState(boolean getQUBO) {
         RealVector stateEnergy = new ArrayRealVector(this.state.getRowDimension());
         for (int i = 0; i < this.state.getRowDimension(); i++) {
             stateEnergy.setEntry(i, this.classicalTrotterEnergy(i));
@@ -373,7 +378,14 @@ public class QuantumAnnealing {
             }
         }
 
-        return this.state.getRowVector(stateEnergy.getMinIndex());
+        RealVector minState = this.state.getRowVector(stateEnergy.getMinIndex());
+        if (getQUBO && !this.isQUBO) {
+            minState = minState.map((v) -> (v + 1) / 2);
+        } else if (!getQUBO && this.isQUBO) {
+            minState = minState.map((v) -> 2 * v - 1);
+        }
+
+        return new Pair<RealVector, Double>(minState, stateEnergy.getMinValue());
     }
 
     public static FieldVector<Complex> getSubVector(FieldVector<Complex> vector, int indices[]) {

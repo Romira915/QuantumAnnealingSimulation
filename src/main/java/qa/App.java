@@ -24,6 +24,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.PointValuePair;
 import org.apache.commons.math3.random.UncorrelatedRandomVectorGenerator;
+import org.apache.commons.math3.util.Pair;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.ChartUtils;
@@ -43,6 +44,7 @@ import org.nd4j.rng.NativeRandom;
 import checkers.igj.quals.I;
 import checkers.units.quals.A;
 import checkers.units.quals.m;
+import qa.SchedulerQA.HyperParameter;
 
 import org.nd4j.linalg.api.rng.DefaultRandom;
 import org.nd4j.linalg.api.rng.Random;
@@ -167,21 +169,26 @@ public class App {
             qubo.putScalar(i, i, qubo.getDouble(i) + value * numbers.getDouble(i));
         }
 
-        QuantumAnnealing quantumAnnealing = new QuantumAnnealing(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
-                8, 0.5, 1000, 5000, 100, seed, true);
-
-        quantumAnnealing.execQMC();
-
-        RealVector resultState = quantumAnnealing.getMinEnergyState();
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
-        resultState = resultState.map((v) -> (v + 1) / 2);
-        System.out.println(numbers);
+
+        ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
+        hyperParameters.add(new HyperParameter(8, 0.5, 1000, 2000, 2000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 500, 2000, 2000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 250, 2000, 2000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 100, 2000, 2000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 50, 2000, 2000));
+
+        SchedulerQA schedulerQA = new SchedulerQA(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
+                hyperParameters.toArray(new HyperParameter[hyperParameters.size()]), seed, false);
+        schedulerQA.run();
+        Pair<RealVector, Double>[] result = schedulerQA.getResult(true);
         System.out.println("sum:" + sum);
-        System.out.println("m:" + m);
-        System.out.println("state" + resultState);
-        double a = resultState.dotProduct(apacheNumbers);
-        System.out.println("a: " + a);
-        System.out.println("b: " + (sum - a));
+        System.out.println("M: " + m);
+        for (int i = 0; i < result.length; i++) {
+            System.out.println("param: " + hyperParameters.get(i));
+            System.out.println("state: " + result[i].getKey() + " E: " + result[i].getValue());
+            System.out.println("w: " + result[i].getKey().dotProduct(apacheNumbers));
+        }
 
     }
 }
