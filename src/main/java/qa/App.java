@@ -168,7 +168,7 @@ public class App {
         }
 
         QuantumAnnealing quantumAnnealing = new QuantumAnnealing(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
-                8, 0.5, 10000, 50000, 1000, seed, true);
+                8, 0.5, 1000, 5000, 100, seed, true);
 
         quantumAnnealing.execQMC();
 
