@@ -172,11 +172,11 @@ public class App {
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
 
         ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
-        hyperParameters.add(new HyperParameter(8, 0.5, 1000, 2000, 2000));
-        hyperParameters.add(new HyperParameter(8, 0.5, 500, 2000, 2000));
-        hyperParameters.add(new HyperParameter(8, 0.5, 250, 2000, 2000));
-        hyperParameters.add(new HyperParameter(8, 0.5, 100, 2000, 2000));
-        hyperParameters.add(new HyperParameter(8, 0.5, 50, 2000, 2000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 1000, 5000, 5000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 500, 5000, 5000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 250, 5000, 5000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 100, 5000, 5000));
+        hyperParameters.add(new HyperParameter(8, 0.5, 50, 5000, 5000));
 
         SchedulerQA schedulerQA = new SchedulerQA(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
                 hyperParameters.toArray(new HyperParameter[hyperParameters.size()]), seed, false);
@@ -188,6 +188,7 @@ public class App {
             System.out.println("param: " + hyperParameters.get(i));
             System.out.println("state: " + result[i].getKey() + " E: " + result[i].getValue());
             System.out.println("w: " + result[i].getKey().dotProduct(apacheNumbers));
+            System.out.println();
         }
 
     }

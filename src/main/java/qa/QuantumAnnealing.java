@@ -361,8 +361,10 @@ public class QuantumAnnealing {
             gamma -= deltaGamma;
         }
 
-        System.out.println("increase:" + increase);
-        System.out.println("decrease:" + decrease);
+        if (this.needDebugLog) {
+            System.out.println("increase:" + increase);
+            System.out.println("decrease:" + decrease);
+        }
     }
 
     public RealMatrix getState() {
