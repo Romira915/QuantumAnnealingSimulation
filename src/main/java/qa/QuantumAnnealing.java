@@ -15,6 +15,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.summary.Sum;
+import org.apache.commons.math3.util.Pair;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.buffer.DataTypeEx;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -116,12 +117,11 @@ public class QuantumAnnealing {
     }
 
     private int spin(int value) {
-        return value;
-        // if (this.isQUBO) {
-        // return 2 * value - 1;
-        // } else {
-        // return value;
-        // }
+        if (this.isQUBO) {
+            return 2 * value - 1;
+        } else {
+            return value;
+        }
     }
 
     private double classicalTrotterEnergy(int trotter) {
@@ -144,12 +144,14 @@ public class QuantumAnnealing {
             for (int j = 0; j < this.N; j++) {
                 for (int k = 0; k < this.trotterN; k++) {
                     if (i <= j) {
-                        E += -(this.isingModel.getEntry(i, j) / this.trotterN) * this.spin(state.getEntry(k, i))
+                        E += -this.isingModel.getEntry(i, j) * this.spin(state.getEntry(k, i))
                                 * this.spin(state.getEntry(k, j));
                     }
                 }
             }
         }
+
+        E /= this.trotterN;
 
         return E;
     }
@@ -188,6 +190,17 @@ public class QuantumAnnealing {
         double a = this.energy(after, beta, gamma);
         double b = this.energy(before, beta, gamma);
         deltaE = a - b;
+
+        return deltaE;
+    }
+
+    private double diffEnergy(int trotter, int spinIndex) {
+        double deltaE = 0;
+
+        for (int i = 0; i < this.N; i++) {
+            deltaE += this.isingModel.getEntry(spinIndex, i) * this.state.getEntry(trotter, i);
+        }
+        deltaE *= 2 * this.state.getEntry(trotter, spinIndex);
 
         return deltaE;
     }
@@ -271,6 +284,13 @@ public class QuantumAnnealing {
         }
 
         return nextState;
+    }
+
+    public Pair<Integer, Integer> randomSpinReversePair() {
+        int trotterIndex = this.jRandom.nextInt(this.trotterN);
+        int spinIndex = this.jRandom.nextInt(this.N);
+
+        return new Pair<Integer, Integer>(trotterIndex, spinIndex);
     }
 
     public int reverseSpin(int spin) {
