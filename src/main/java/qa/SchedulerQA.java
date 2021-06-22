@@ -26,7 +26,7 @@ public class SchedulerQA {
         @Override
         public String toString() {
             return "trotterN: " + this.trotterN + " initBeta: " + this.initBeta + " initGamma: " + this.initGamma
-                    + " mStep: " + this.monteCarloStep + "astep: " + this.annealingStep;
+                    + " mStep: " + this.monteCarloStep + " aStep: " + this.annealingStep;
         }
     }
 

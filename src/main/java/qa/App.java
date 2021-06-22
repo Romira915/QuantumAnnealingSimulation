@@ -172,18 +172,19 @@ public class App {
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
 
         ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
-        hyperParameters.add(new HyperParameter(8, 0.5, 1000, 5000, 5000));
-        hyperParameters.add(new HyperParameter(8, 0.5, 500, 5000, 5000));
-        hyperParameters.add(new HyperParameter(8, 0.5, 250, 5000, 5000));
-        hyperParameters.add(new HyperParameter(8, 0.5, 100, 5000, 5000));
-        hyperParameters.add(new HyperParameter(8, 0.5, 50, 5000, 5000));
+        hyperParameters.add(new HyperParameter(8, 0.05, 2500, 5000, 10000));
+        hyperParameters.add(new HyperParameter(8, 0.05, 1000, 5000, 10000));
+        hyperParameters.add(new HyperParameter(8, 0.05, 500, 5000, 10000));
+        hyperParameters.add(new HyperParameter(8, 0.05, 250, 5000, 10000));
+        hyperParameters.add(new HyperParameter(8, 0.05, 100, 5000, 10000));
+        hyperParameters.add(new HyperParameter(8, 0.05, 50, 5000, 10000));
 
         SchedulerQA schedulerQA = new SchedulerQA(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
                 hyperParameters.toArray(new HyperParameter[hyperParameters.size()]), seed, false);
         schedulerQA.run();
         Pair<RealVector, Double>[] result = schedulerQA.getResult(true);
         System.out.println("sum:" + sum);
-        System.out.println("M: " + m);
+        System.out.println("M: " + m + "\n");
         for (int i = 0; i < result.length; i++) {
             System.out.println("param: " + hyperParameters.get(i));
             System.out.println("state: " + result[i].getKey() + " E: " + result[i].getValue());

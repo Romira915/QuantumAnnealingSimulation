@@ -136,8 +136,10 @@ public class QuantumAnnealing {
 
         for (int i = 0; i < this.N; i++) {
             for (int j = 0; j < this.N; j++) {
-                E += -this.isingModel.getEntry(i, j) * this.spin(this.state.getEntry(trotter, i))
-                        * this.spin(this.state.getEntry(trotter, j));
+                if (i <= j) {
+                    E += -this.isingModel.getEntry(i, j) * this.spin(this.state.getEntry(trotter, i))
+                            * this.spin(this.state.getEntry(trotter, j));
+                }
             }
         }
 
@@ -150,8 +152,10 @@ public class QuantumAnnealing {
         for (int i = 0; i < this.N; i++) {
             for (int j = 0; j < this.N; j++) {
                 for (int k = 0; k < this.trotterN; k++) {
-                    E += -this.isingModel.getEntry(i, j) * this.spin(state.getEntry(k, i))
-                            * this.spin(state.getEntry(k, j));
+                    if (i <= j) {
+                        E += -this.isingModel.getEntry(i, j) * this.spin(state.getEntry(k, i))
+                                * this.spin(state.getEntry(k, j));
+                    }
                 }
             }
         }
