@@ -37,7 +37,7 @@ public class QuantumAnnealing {
     private int reverseTrotterN;
     private int Tau = (int) Math.pow(2, 5);
     private int time = 0;
-    private double initTemperature;
+    private double initBeta;
     private int initGamma = 1;
     private int trotterN;
     private RealVector E;
@@ -81,8 +81,8 @@ public class QuantumAnnealing {
         this.E = E;
     }
 
-    public QuantumAnnealing(RealMatrix ising, boolean isQUBO, int trotterN, double initTemperature, int initGamma,
-            int mStep, int aStep, int seed, boolean needDebugLog) {
+    public QuantumAnnealing(RealMatrix ising, boolean isQUBO, int trotterN, double initBeta, int initGamma, int mStep,
+            int aStep, int seed, boolean needDebugLog) {
         this.jRandom = new java.util.Random(seed);
         this.nRandom = Nd4j.getRandom();
         this.nRandom.setSeed(seed);
@@ -93,7 +93,7 @@ public class QuantumAnnealing {
         this.trotterN = trotterN;
         this.state = isQUBO ? QuantumAnnealing.initQUBOState(this.N, trotterN, this.nRandom)
                 : QuantumAnnealing.initIsingState(this.N, trotterN, this.nRandom);
-        this.initTemperature = initTemperature;
+        this.initBeta = initBeta;
         this.initGamma = initGamma;
         this.monteCarloStep = mStep;
         this.annealingStep = aStep;
@@ -143,8 +143,10 @@ public class QuantumAnnealing {
         for (int i = 0; i < this.N; i++) {
             for (int j = 0; j < this.N; j++) {
                 for (int k = 0; k < this.trotterN; k++) {
-                    E += -(this.isingModel.getEntry(i, j) / this.trotterN) * this.spin(state.getEntry(k, i))
-                            * this.spin(state.getEntry(k, j));
+                    if (i <= j) {
+                        E += -(this.isingModel.getEntry(i, j) / this.trotterN) * this.spin(state.getEntry(k, i))
+                                * this.spin(state.getEntry(k, j));
+                    }
                 }
             }
         }
@@ -152,9 +154,8 @@ public class QuantumAnnealing {
         return E;
     }
 
-    private double quantumEnergy(RealMatrix state, double temperature, double gamma) {
+    private double quantumEnergy(RealMatrix state, double beta, double gamma) {
         double E = 0;
-        double beta = 1.0 / temperature;
 
         for (int i = 0; i < this.N; i++) {
             for (int k = 0; k < this.trotterN; k++) {
@@ -169,23 +170,23 @@ public class QuantumAnnealing {
         return E;
     }
 
-    private double energy(RealMatrix state, double temperature, double gamma) {
+    private double energy(RealMatrix state, double beta, double gamma) {
         double E = 0;
 
         // E = this.scheduleE(t) * this.classicalEnergy(state) +
         // this.quantumEnergy(state, t, this.scheduleG(t));
-        double c = this.scheduleE(this.time) * this.classicalEnergy(state);
-        double q = this.quantumEnergy(state, temperature, gamma);
+        double c = this.classicalEnergy(state);
+        double q = this.quantumEnergy(state, beta, gamma);
         E = c + q;
 
         return E;
     }
 
-    private double diffEnergy(RealMatrix before, RealMatrix after, double temperature, double gamma) {
+    private double diffEnergy(RealMatrix before, RealMatrix after, double beta, double gamma) {
         double deltaE = 0;
 
-        double a = this.energy(after, temperature, gamma);
-        double b = this.energy(before, temperature, gamma);
+        double a = this.energy(after, beta, gamma);
+        double b = this.energy(before, beta, gamma);
         deltaE = a - b;
 
         return deltaE;
@@ -289,13 +290,36 @@ public class QuantumAnnealing {
         double decrease = 0;
         double increase = 0;
 
-        for (double temperature = this.initTemperature; temperature > 0; temperature -= (double) this.initTemperature
-                / this.annealingStep, this.time += 1) {
+        // for (double beta = this.initBeta; beta > 0; beta -= (double) this.initBeta
+        // / this.annealingStep, this.time += 1) {
+        // for (int g = 0; g < this.monteCarloStep; g++) {
+        // RealMatrix nextState = this.randomSpinReverse();
+
+        // double deltaE = this.diffEnergy(this.state, nextState, beta, gamma);
+        // double p = Math.min(1, Math.exp(-deltaE / beta));
+        // if (QuantumAnnealing.randomBoolean(p, this.jRandom)) {
+        // this.state = nextState;
+        // if (this.needDebugLog) {
+        // System.out.println("deltaE: " + deltaE + " p: " + p);
+        // }
+        // if (deltaE > 0) {
+        // increase += deltaE;
+        // } else {
+        // decrease += deltaE;
+        // }
+        // }
+
+        // gamma -= deltaGamma;
+        // }
+        // }
+
+        double beta = this.initBeta;
+        for (int i = 0; i < this.annealingStep; i++) {
             for (int g = 0; g < this.monteCarloStep; g++) {
                 RealMatrix nextState = this.randomSpinReverse();
 
-                double deltaE = this.diffEnergy(this.state, nextState, temperature, gamma);
-                double p = Math.min(1, Math.exp(-deltaE / temperature));
+                double deltaE = this.diffEnergy(this.state, nextState, beta, gamma);
+                double p = Math.min(1, Math.exp(-deltaE * beta));
                 if (QuantumAnnealing.randomBoolean(p, this.jRandom)) {
                     this.state = nextState;
                     if (this.needDebugLog) {
