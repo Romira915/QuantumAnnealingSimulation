@@ -22,6 +22,12 @@ public class SchedulerQA {
             this.monteCarloStep = mStep;
             this.annealingStep = aStep;
         }
+
+        @Override
+        public String toString() {
+            return "trotterN: " + this.trotterN + " initBeta: " + this.initBeta + " initGamma: " + this.initGamma
+                    + " mStep: " + this.monteCarloStep + "astep: " + this.annealingStep;
+        }
     }
 
     private class ExecQA extends Thread {
