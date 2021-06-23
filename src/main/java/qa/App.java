@@ -143,7 +143,8 @@ public class App {
 
     public static void main(String[] args) {
         int N = 50;
-        int seed = (int) System.currentTimeMillis();
+        // int seed = (int) System.currentTimeMillis();
+        int seed = 2021;
         Random random = Nd4j.getRandom();
         random.setSeed(seed);
 
@@ -172,12 +173,12 @@ public class App {
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
 
         ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
-        hyperParameters.add(new HyperParameter(8, 0.05, 2500, 5000, 10000));
-        hyperParameters.add(new HyperParameter(8, 0.05, 1000, 5000, 10000));
-        hyperParameters.add(new HyperParameter(8, 0.05, 500, 5000, 10000));
-        hyperParameters.add(new HyperParameter(8, 0.05, 250, 5000, 10000));
-        hyperParameters.add(new HyperParameter(8, 0.05, 100, 5000, 10000));
-        hyperParameters.add(new HyperParameter(8, 0.05, 50, 5000, 10000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 2500, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 1000, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 500, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 250, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 100, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 50, 5000, 50000));
 
         SchedulerQA schedulerQA = new SchedulerQA(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
                 hyperParameters.toArray(new HyperParameter[hyperParameters.size()]), seed, false);
@@ -189,6 +190,7 @@ public class App {
             System.out.println("param: " + hyperParameters.get(i));
             System.out.println("state: " + result[i].getKey() + " E: " + result[i].getValue());
             System.out.println("w: " + result[i].getKey().dotProduct(apacheNumbers));
+            System.out.println("c: " + Math.pow(result[i].getKey().dotProduct(apacheNumbers) - m, 2));
             System.out.println();
         }
 
