@@ -173,12 +173,13 @@ public class App {
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
 
         ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
-        hyperParameters.add(new HyperParameter(8, 0.01, 2500, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 1000, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 500, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 250, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 100, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 50, 5000, 50000));
+        hyperParameters.add(new HyperParameter(32, 0.01, 2500, 5000, 50000));
+        hyperParameters.add(new HyperParameter(32, 0.01, 1000, 5000, 50000));
+        hyperParameters.add(new HyperParameter(32, 0.01, 500, 5000, 50000));
+        hyperParameters.add(new HyperParameter(32, 0.01, 250, 5000, 50000));
+        hyperParameters.add(new HyperParameter(32, 0.01, 100, 5000, 50000));
+        hyperParameters.add(new HyperParameter(32, 0.01, 50, 5000, 50000));
+        hyperParameters.add(new HyperParameter(32, 0.01, 5, 5000, 50000));
 
         SchedulerQA schedulerQA = new SchedulerQA(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
                 hyperParameters.toArray(new HyperParameter[hyperParameters.size()]), seed, false);
