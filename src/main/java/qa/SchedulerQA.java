@@ -2,6 +2,7 @@ package qa;
 
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.Pair;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.apache.commons.math3.linear.RealVector;
 
 public class SchedulerQA {
@@ -43,7 +44,7 @@ public class SchedulerQA {
         }
     }
 
-    public SchedulerQA(RealMatrix ising, boolean isQUBO, HyperParameter[] hyperParameters, int seed,
+    public SchedulerQA(Pair<INDArray, INDArray> ising, boolean isQUBO, HyperParameter[] hyperParameters, int seed,
             boolean needDebugLog) {
         this.quantumAnnealings = new QuantumAnnealing[hyperParameters.length];
         this.execQA = new ExecQA[hyperParameters.length];

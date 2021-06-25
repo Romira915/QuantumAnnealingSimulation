@@ -39,8 +39,8 @@ public class QuantumAnnealingTest {
     @Test
     public void testReverseSpin() {
         RealMatrix qubo = new Array2DRowRealMatrix(2, 2);
-        QuantumAnnealing quantumAnnealingQUBO = new QuantumAnnealing(qubo, true, 2, 0, 0, 0, 0, 0, false);
-        QuantumAnnealing quantumAnnealingIsing = new QuantumAnnealing(qubo, false, 2, 0, 0, 0, 0, 0, false);
+        QuantumAnnealing quantumAnnealingQUBO = new QuantumAnnealing(null, true, 2, 0, 0, 0, 0, 0, false);
+        QuantumAnnealing quantumAnnealingIsing = new QuantumAnnealing(null, false, 2, 0, 0, 0, 0, 0, false);
 
         assertThat(quantumAnnealingQUBO.reverseSpin(0), is(1));
         assertThat(quantumAnnealingQUBO.reverseSpin(1), is(0));

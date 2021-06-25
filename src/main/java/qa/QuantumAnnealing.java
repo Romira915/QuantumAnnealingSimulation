@@ -43,7 +43,7 @@ public class QuantumAnnealing {
     private int initGamma = 1;
     private int trotterN;
     private RealVector E;
-    private RealMatrix isingModel;
+    private Pair<INDArray, INDArray> isingModel;
     private RealMatrix state;
     private BiFunction<Double, FieldVector<Complex>, Complex>[] diffeqArray;
     private boolean isQUBO;
@@ -83,14 +83,14 @@ public class QuantumAnnealing {
         this.E = E;
     }
 
-    public QuantumAnnealing(RealMatrix ising, boolean isQUBO, int trotterN, double initBeta, int initGamma, int mStep,
-            int aStep, int seed, boolean needDebugLog) {
+    public QuantumAnnealing(Pair<INDArray, INDArray> ising, boolean isQUBO, int trotterN, double initBeta,
+            int initGamma, int mStep, int aStep, int seed, boolean needDebugLog) {
         this.jRandom = new java.util.Random(seed);
         this.nRandom = Nd4j.getRandom();
         this.nRandom.setSeed(seed);
 
-        this.N = ising.getRowDimension();
-        this.isingModel = ising.copy();
+        this.N = (int) ising.getSecond().length();
+        this.isingModel = ising;
         this.isQUBO = isQUBO;
         this.trotterN = trotterN;
         this.state = isQUBO ? QuantumAnnealing.initQUBOState(this.N, trotterN, this.nRandom)
@@ -103,7 +103,7 @@ public class QuantumAnnealing {
         this.needDebugLog = needDebugLog;
     }
 
-    public QuantumAnnealing(RealMatrix ising, boolean isQUBO, HyperParameter hyperParameter, int seed,
+    public QuantumAnnealing(Pair<INDArray, INDArray> ising, boolean isQUBO, HyperParameter hyperParameter, int seed,
             boolean needDebugLog) {
         this(ising, isQUBO, hyperParameter.trotterN, hyperParameter.initBeta, hyperParameter.initGamma,
                 hyperParameter.monteCarloStep, hyperParameter.annealingStep, seed, needDebugLog);
@@ -137,10 +137,14 @@ public class QuantumAnnealing {
         for (int i = 0; i < this.N; i++) {
             for (int j = 0; j < this.N; j++) {
                 if (i <= j) {
-                    E += -this.isingModel.getEntry(i, j) * this.spin(this.state.getEntry(trotter, i))
+                    E += -this.isingModel.getFirst().getDouble(i, j) * this.spin(this.state.getEntry(trotter, i))
                             * this.spin(this.state.getEntry(trotter, j));
                 }
             }
+        }
+
+        for (int i = 0; i < this.N; i++) {
+            E += -this.isingModel.getSecond().getDouble(i) * this.spin(this.state.getEntry(trotter, i));
         }
 
         return E;
@@ -153,10 +157,16 @@ public class QuantumAnnealing {
             for (int j = 0; j < this.N; j++) {
                 for (int k = 0; k < this.trotterN; k++) {
                     if (i <= j) {
-                        E += -this.isingModel.getEntry(i, j) * this.spin(state.getEntry(k, i))
+                        E += -this.isingModel.getFirst().getDouble(i, j) * this.spin(state.getEntry(k, i))
                                 * this.spin(state.getEntry(k, j));
                     }
                 }
+            }
+        }
+
+        for (int i = 0; i < this.N; i++) {
+            for (int k = 0; k < this.trotterN; k++) {
+                E += -this.isingModel.getSecond().getDouble(i) * this.spin(state.getEntry(k, i));
             }
         }
 
@@ -207,7 +217,7 @@ public class QuantumAnnealing {
         double deltaE = 0;
 
         for (int i = 0; i < this.N; i++) {
-            deltaE += this.isingModel.getEntry(spinIndex, i) * this.state.getEntry(trotter, i);
+            deltaE += this.isingModel.getFirst().getDouble(spinIndex, i) * this.state.getEntry(trotter, i);
         }
         deltaE *= 2 * this.state.getEntry(trotter, spinIndex);
 

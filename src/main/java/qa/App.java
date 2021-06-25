@@ -38,6 +38,7 @@ import org.nd4j.linalg.api.iter.NdIndexIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.random.impl.Range;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.rng.NativeRandom;
 
@@ -151,12 +152,14 @@ public class App {
         INDArray numbers = Nd4j.rand(0, 1, random, N);
         double sum = numbers.sumNumber().doubleValue();
         double m = sum * 0.7;
-        INDArray qubo = Nd4j.zeros(N, N);
+        INDArray J = Nd4j.zeros(N, N);
+        INDArray h = Nd4j.zeros(N);
+        Pair<INDArray, INDArray> ising = new Pair<INDArray, INDArray>(J, h);
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
                 if (i <= j) {
-                    qubo.putScalar(i, j, 0.25 * numbers.getDouble(i) * numbers.getDouble(j));
+                    ising.getFirst().putScalar(i, j, 0.25 * numbers.getDouble(i) * numbers.getDouble(j));
                 }
             }
         }
@@ -164,24 +167,25 @@ public class App {
         for (int i = 0; i < N; i++) {
             double value = 0;
             for (int j = 0; j < N; j++) {
-                value += numbers.getDouble(j) - m;
+                value += numbers.getDouble(j);
             }
             value *= 0.5;
-            qubo.putScalar(i, i, qubo.getDouble(i) + value * numbers.getDouble(i));
+            value -= m;
+            ising.getSecond().putScalar(i, value * numbers.getDouble(i));
         }
 
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
 
         ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
-        hyperParameters.add(new HyperParameter(32, 0.01, 2500, 5000, 50000));
-        hyperParameters.add(new HyperParameter(32, 0.01, 1000, 5000, 50000));
-        hyperParameters.add(new HyperParameter(32, 0.01, 500, 5000, 50000));
-        hyperParameters.add(new HyperParameter(32, 0.01, 250, 5000, 50000));
-        hyperParameters.add(new HyperParameter(32, 0.01, 100, 5000, 50000));
-        hyperParameters.add(new HyperParameter(32, 0.01, 50, 5000, 50000));
-        hyperParameters.add(new HyperParameter(32, 0.01, 5, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 2500, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 1000, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 500, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 250, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 100, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 50, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 5, 5000, 50000));
 
-        SchedulerQA schedulerQA = new SchedulerQA(QuantumAnnealing.iNDArrayToApacheMatrix(qubo), false,
+        SchedulerQA schedulerQA = new SchedulerQA(ising, false,
                 hyperParameters.toArray(new HyperParameter[hyperParameters.size()]), seed, false);
         schedulerQA.run();
         Pair<RealVector, Double>[] result = schedulerQA.getResult(true);
