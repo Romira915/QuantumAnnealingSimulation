@@ -178,14 +178,19 @@ public class App {
 
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
 
+        int trotterN = 8;
+        double beta = 0.01;
+        int gamma = 2000;
+        int mStep = 5000;
+        int aStep = 5000;
+
         ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
-        hyperParameters.add(new HyperParameter(8, 0.01, 2500, 100, 500));
-        hyperParameters.add(new HyperParameter(8, 0.01, 1000, 100, 500));
-        hyperParameters.add(new HyperParameter(8, 0.01, 500, 100, 500));
-        hyperParameters.add(new HyperParameter(8, 0.01, 250, 100, 500));
-        hyperParameters.add(new HyperParameter(8, 0.01, 100, 100, 500));
-        hyperParameters.add(new HyperParameter(8, 0.01, 50, 100, 500));
-        hyperParameters.add(new HyperParameter(8, 0.01, 5, 100, 500));
+        hyperParameters.add(new HyperParameter(trotterN, beta, gamma /= 2, mStep, aStep));
+        hyperParameters.add(new HyperParameter(trotterN, beta, gamma /= 2, mStep, aStep));
+        hyperParameters.add(new HyperParameter(trotterN, beta, gamma /= 2, mStep, aStep));
+        hyperParameters.add(new HyperParameter(trotterN, beta, gamma /= 2, mStep, aStep));
+        hyperParameters.add(new HyperParameter(trotterN, beta, gamma /= 2, mStep, aStep));
+        hyperParameters.add(new HyperParameter(trotterN, beta, gamma /= 2, mStep, aStep));
 
         SchedulerQA schedulerQA = new SchedulerQA(ising, false,
                 hyperParameters.toArray(new HyperParameter[hyperParameters.size()]), seed, false);
