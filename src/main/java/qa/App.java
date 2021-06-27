@@ -40,6 +40,7 @@ import org.nd4j.linalg.api.ops.random.impl.Range;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.nativeblas.Nd4jCpu.mean_pairwssqerr_loss;
 import org.nd4j.rng.NativeRandom;
 
 import checkers.igj.quals.I;
@@ -143,6 +144,7 @@ public class App {
     }
 
     public static void main(String[] args) {
+        final String url = "https://discord.com/api/webhooks/855105706784849941/7g3LC4Am__0Cxe9yDk1oQ6ygxWGvEEPSvG8Bro6Dh6_QxIZl7RE4tIe56FfXfMV0cxpA";
         int N = 50;
         // int seed = (int) System.currentTimeMillis();
         int seed = 2021;
@@ -177,27 +179,36 @@ public class App {
         RealVector apacheNumbers = QuantumAnnealing.iNDArrayToApacheVector(numbers);
 
         ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
-        hyperParameters.add(new HyperParameter(8, 0.01, 2500, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 1000, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 500, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 250, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 100, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 50, 5000, 50000));
-        hyperParameters.add(new HyperParameter(8, 0.01, 5, 5000, 50000));
+        hyperParameters.add(new HyperParameter(8, 0.01, 2500, 100, 500));
+        hyperParameters.add(new HyperParameter(8, 0.01, 1000, 100, 500));
+        hyperParameters.add(new HyperParameter(8, 0.01, 500, 100, 500));
+        hyperParameters.add(new HyperParameter(8, 0.01, 250, 100, 500));
+        hyperParameters.add(new HyperParameter(8, 0.01, 100, 100, 500));
+        hyperParameters.add(new HyperParameter(8, 0.01, 50, 100, 500));
+        hyperParameters.add(new HyperParameter(8, 0.01, 5, 100, 500));
 
         SchedulerQA schedulerQA = new SchedulerQA(ising, false,
                 hyperParameters.toArray(new HyperParameter[hyperParameters.size()]), seed, false);
         schedulerQA.run();
         Pair<RealVector, Double>[] result = schedulerQA.getResult(true);
+
+        Webhook webhook = new Webhook(url);
+        String message = "";
+
         System.out.println("sum:" + sum);
+        message += "sum: " + sum + "\r";
         System.out.println("M: " + m + "\n");
+        message += "M: " + m + "\r";
         for (int i = 0; i < result.length; i++) {
             System.out.println("param: " + hyperParameters.get(i));
+            message += "param: " + hyperParameters.get(i) + "\r";
             System.out.println("state: " + result[i].getKey() + " E: " + result[i].getValue());
             System.out.println("w: " + result[i].getKey().dotProduct(apacheNumbers));
             System.out.println("c: " + Math.pow(result[i].getKey().dotProduct(apacheNumbers) - m, 2));
+            message += "c: " + Math.pow(result[i].getKey().dotProduct(apacheNumbers) - m, 2) + "\r";
             System.out.println();
         }
 
+        webhook.send(message);
     }
 }
