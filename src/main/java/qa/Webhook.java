@@ -24,6 +24,7 @@ public class Webhook {
     public Webhook(String url, String name) {
         this.url = url;
         this.username = name;
+        this.json = new ArrayList<>();
 
         this.json.add(new BasicNameValuePair("username", this.username));
     }
