@@ -181,7 +181,7 @@ public class App {
         int trotterN = 8;
         double beta = 0.01;
         int gamma = 2000;
-        int mStep = 5000;
+        int mStep = 100;
         int aStep = 5000;
 
         ArrayList<HyperParameter> hyperParameters = new ArrayList<>();
@@ -215,5 +215,6 @@ public class App {
         }
 
         webhook.send(message);
+
     }
 }
